@@ -1,0 +1,879 @@
+﻿/* ============================================
+   Hotel North Star Inn â€” Theme Styles
+   ============================================ */
+
+/* --- Reset & Base --- */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.6;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+a { text-decoration: none; }
+ul { list-style: none; }
+img { max-width: 100%; display: block; }
+
+.container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.section {
+  padding: 80px 0;
+}
+
+.section-alt {
+  background-color: var(--bg-secondary);
+}
+
+.section-title {
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: 0.5px;
+}
+
+.section-subtitle {
+  text-align: center;
+  color: var(--text-secondary);
+  margin-bottom: 48px;
+  font-size: 1.05rem;
+}
+
+/* --- Buttons --- */
+.btn {
+  display: inline-block;
+  padding: 12px 32px;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.3s ease, transform 0.2s ease, color 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+.btn-accent {
+  background-color: var(--accent);
+  color: #fff;
+}
+
+.btn-accent:hover {
+  background-color: var(--accent-hover);
+}
+
+/* --- Theme Switcher --- */
+.theme-switcher {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  background: var(--nav-bg);
+  backdrop-filter: blur(12px);
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border);
+  transition: background-color 0.4s ease, border-color 0.4s ease;
+}
+
+.switcher-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.switcher-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  line-height: 1;
+}
+
+.switcher-name {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+  line-height: 1;
+  transition: color 0.3s ease;
+}
+
+.switcher-options {
+  display: flex;
+  gap: 8px;
+}
+
+.swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.2s ease, border-color 0.3s ease;
+}
+
+.swatch:hover {
+  transform: scale(1.2);
+}
+
+.swatch.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--bg-primary);
+}
+
+/* --- Navbar --- */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background: var(--nav-bg);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.4s ease, border-color 0.4s ease;
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+}
+
+.logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--nav-text);
+  transition: color 0.4s ease;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+}
+
+.nav-links a {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--nav-text);
+  transition: color 0.3s ease;
+  letter-spacing: 0.3px;
+}
+
+.nav-links a:hover {
+  color: var(--accent);
+}
+
+/* --- Hero --- */
+.hero {
+  position: relative;
+  height: 100vh;
+  min-height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--hero-bg);
+  overflow: hidden;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--hero-overlay);
+}
+
+.hero-content {
+  position: relative;
+  text-align: center;
+  color: var(--hero-text, var(--text-primary));
+  z-index: 1;
+}
+
+.hero-content h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+}
+
+.text-crimson {
+  color: var(--hero-text-crimson, #dc2626);
+}
+
+.text-blue-brand {
+  color: var(--hero-text-blue, #5b8ec9);
+}
+
+.hero-sanskrit {
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  margin-bottom: 12px;
+  opacity: 0.8;
+}
+
+.hero-tagline {
+  font-size: 1.3rem;
+  margin-bottom: 8px;
+  opacity: 0.95;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  font-style: italic;
+}
+
+.hero-sub {
+  font-size: 0.95rem;
+  margin-bottom: 32px;
+  opacity: 0.8;
+  max-width: 550px;
+  margin-left: auto;
+  margin-right: auto;
+  line-height: 1.6;
+}
+
+/* --- About --- */
+.about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.about-text p {
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  font-size: 1rem;
+  line-height: 1.8;
+}
+
+.about-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  text-align: center;
+}
+
+.stat {
+  padding: 24px 16px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  transition: background-color 0.4s ease, border-color 0.4s ease;
+}
+
+.stat-number {
+  display: block;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 4px;
+  transition: color 0.4s ease;
+}
+
+.stat-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* --- Rooms --- */
+.rooms-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.room-card {
+  background: var(--bg-primary);
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.4s ease, border-color 0.4s ease;
+}
+
+.room-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 30px var(--shadow-color, rgba(0, 0, 0, 0.1));
+}
+
+.room-img {
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+}
+
+.room-img.standard-room {
+  background-color: var(--accent);
+  opacity: 0.8;
+  border-bottom: 4px solid var(--accent);
+}
+
+.room-img.deluxe-room {
+  background-color: var(--accent);
+  opacity: 0.8;
+  border-bottom: 4px solid var(--accent);
+}
+
+.room-img.suite-room {
+  background-color: var(--accent);
+  opacity: 0.8;
+  border-bottom: 4px solid var(--accent);
+}
+
+.room-info {
+  padding: 20px;
+}
+
+.room-info h3 {
+  font-size: 1.15rem;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.room-info > p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+.room-features {
+  margin-bottom: 16px;
+}
+
+.room-features li {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  padding: 4px 0;
+  padding-left: 18px;
+  position: relative;
+}
+
+.room-features li::before {
+  content: '-';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.room-price {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* --- Amenities --- */
+.amenities-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.amenity-card {
+  text-align: center;
+  padding: 32px 20px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  transition: transform 0.3s ease, background-color 0.4s ease, border-color 0.4s ease;
+}
+
+.amenity-card:hover {
+  transform: translateY(-4px);
+}
+
+.amenity-icon {
+  font-size: 2.5rem;
+  color: var(--accent);
+  margin-bottom: 12px;
+  line-height: 1;
+  transition: color 0.4s ease;
+}
+
+.amenity-card h3 {
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.amenity-card p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* --- Materials / Texture --- */
+.materials-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.material-card {
+  text-align: center;
+  padding: 0;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: transform 0.3s ease, background-color 0.4s ease, border-color 0.4s ease;
+}
+
+.material-card:hover {
+  transform: translateY(-4px);
+}
+
+.material-card h3 {
+  font-size: 1.05rem;
+  color: var(--text-primary);
+  margin: 20px 20px 8px;
+}
+
+.material-card p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0 20px 24px;
+  line-height: 1.6;
+}
+
+.material-visual {
+  height: 160px;
+  width: 100%;
+}
+
+.material-visual.material-wood {
+  background-color: var(--accent);
+  opacity: 0.3;
+  border-bottom: 4px solid var(--accent);
+  transition: background-color 0.4s ease, border-color 0.4s ease;
+}
+
+.material-visual.material-stone {
+  background-color: var(--text-primary);
+  opacity: 0.15;
+  border-bottom: 4px solid var(--text-primary);
+  transition: background-color 0.4s ease, border-color 0.4s ease;
+}
+
+.material-visual.material-textile {
+  background-color: var(--accent);
+  opacity: 0.2;
+  border-bottom: 4px solid var(--accent);
+  transition: background-color 0.4s ease, border-color 0.4s ease;
+}
+
+/* --- Contact --- */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 48px;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.contact-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.contact-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--accent);
+  transition: color 0.4s ease;
+}
+
+.contact-item span:last-child {
+  color: var(--text-primary);
+}
+
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.contact-form input,
+.contact-form textarea {
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.95rem;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.contact-form textarea {
+  resize: vertical;
+}
+
+/* --- Footer --- */
+.footer {
+  background: var(--footer-bg);
+  color: var(--footer-text);
+  padding: 48px 0 24px;
+  transition: background-color 0.4s ease, color 0.4s ease;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.footer-brand h3 {
+  font-size: 1.2rem;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.footer-brand p {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.footer-sub {
+  font-size: 0.8rem;
+  opacity: 0.55;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.footer-links {
+  display: flex;
+  gap: 24px;
+}
+
+.footer-social {
+  display: flex;
+  gap: 12px;
+}
+
+.footer-social a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--footer-text);
+  color: var(--footer-text);
+  font-size: 0.7rem;
+  font-weight: 700;
+  opacity: 0.6;
+  transition: opacity 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.footer-social a:hover {
+  opacity: 1;
+  background-color: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.footer-links a {
+  font-size: 0.85rem;
+  color: var(--footer-text);
+  opacity: 0.7;
+  transition: opacity 0.3s ease, color 0.3s ease;
+}
+
+.footer-links a:hover {
+  opacity: 1;
+  color: var(--accent);
+}
+
+.footer-copy {
+  font-size: 0.8rem;
+  opacity: 0.5;
+  margin-top: 8px;
+}
+
+/* ============================================
+   THEME 1 â€” Neutral Elegance
+   ============================================ */
+.theme-neutral {
+  --bg-primary: #faf7f2;
+  --bg-secondary: #f0ebe3;
+  --text-primary: #3d3229;
+  --text-secondary: #8a7f75;
+  --accent: #a89080;
+  --accent-hover: #8c7a6a;
+  --border: #e0d8ce;
+  --nav-bg: rgba(250, 247, 242, 0.92);
+  --nav-text: #3d3229;
+  --hero-bg: #e8e0d6;
+  --hero-text: #3d3229;
+  --hero-overlay: rgba(255, 255, 255, 0.3);
+  --hero-text-crimson: #a89080;
+  --hero-text-blue: #7a6f63;
+  --footer-bg: #d4c9bc;
+  --footer-text: #3d3229;
+  --shadow-color: rgba(61, 50, 41, 0.1);
+}
+
+/* ============================================
+   THEME 2 â€” Serene Blues & Greens
+   ============================================ */
+.theme-serenity {
+  --bg-primary: #f0f7f5;
+  --bg-secondary: #e0f0ec;
+  --text-primary: #1a4040;
+  --text-secondary: #5a8a8a;
+  --accent: #2c7a7a;
+  --accent-hover: #1e5c5c;
+  --border: #c8ddd9;
+  --nav-bg: rgba(240, 247, 245, 0.92);
+  --nav-text: #1a4040;
+  --hero-bg: #d0e8e4;
+  --hero-text: #1a4040;
+  --hero-overlay: rgba(255, 255, 255, 0.3);
+  --hero-text-crimson: #2c7a7a;
+  --hero-text-blue: #5a8a8a;
+  --footer-bg: #c8ddd9;
+  --footer-text: #1a4040;
+  --shadow-color: rgba(26, 64, 64, 0.1);
+}
+
+/* ============================================
+   THEME 3 — Earthy & Botanical
+   ============================================ */
+.theme-earthy {
+  --bg-primary: #f5f0e8;
+  --bg-secondary: #ebe3d5;
+  --text-primary: #3d3229;
+  --text-secondary: #7a6f63;
+  --accent: #5c7a5c;
+  --accent-hover: #4a634a;
+  --border: #d9cfc0;
+  --nav-bg: rgba(245, 240, 232, 0.92);
+  --nav-text: #3d3229;
+  --hero-bg: #e0d8cc;
+  --hero-text: #3d3229;
+  --hero-overlay: rgba(255, 255, 255, 0.3);
+  --hero-text-crimson: #5c7a5c;
+  --hero-text-blue: #7a6f63;
+  --footer-bg: #d9cfc0;
+  --footer-text: #3d3229;
+  --shadow-color: rgba(61, 50, 41, 0.1);
+}
+
+/* ============================================
+   THEME 4 — Muted Pastels & Pinks
+   ============================================ */
+.theme-pastel {
+  --bg-primary: #fdf8f5;
+  --bg-secondary: #f5ede8;
+  --text-primary: #3a2e2a;
+  --text-secondary: #8a7a72;
+  --accent: #c4817a;
+  --accent-hover: #a86862;
+  --border: #e8ddd8;
+  --nav-bg: rgba(253, 248, 245, 0.92);
+  --nav-text: #3a2e2a;
+  --hero-bg: #f0e0dc;
+  --hero-text: #3a2e2a;
+  --hero-overlay: rgba(255, 255, 255, 0.3);
+  --hero-text-crimson: #c4817a;
+  --hero-text-blue: #8a7a72;
+  --footer-bg: #e8ddd8;
+  --footer-text: #3a2e2a;
+  --shadow-color: rgba(58, 46, 42, 0.08);
+}
+
+/* ============================================
+   THEME 5 — North Star Signature
+   ============================================ */
+.theme-northstar {
+  --bg-primary: #faf7f0;
+  --bg-secondary: #f0ebe2;
+  --text-primary: #2a2218;
+  --text-secondary: #7a6e5e;
+  --accent: #c8a84e;
+  --accent-hover: #b0903a;
+  --border: #e0d8ce;
+  --nav-bg: rgba(250, 247, 240, 0.92);
+  --nav-text: #2a2218;
+  --hero-bg: #e8e0d0;
+  --hero-text: #2a2218;
+  --hero-overlay: rgba(255, 255, 255, 0.3);
+  --hero-text-crimson: #c8a84e;
+  --hero-text-blue: #7a6e5e;
+  --footer-bg: #e0d8ce;
+  --footer-text: #2a2218;
+  --shadow-color: rgba(42, 34, 24, 0.1);
+}
+
+.theme-northstar .hero-content h1::after {
+  content: '\2605';
+  display: block;
+  font-size: 1.2rem;
+  color: var(--accent);
+  margin-top: 8px;
+  opacity: 0.8;
+  letter-spacing: 6px;
+}
+
+/* ============================================
+   THEME 6 - Crimson Warmth
+   ============================================ */
+.theme-crimson {
+  --bg-primary: #faf8f6;
+  --bg-secondary: #f1eeea;
+  --text-primary: #2a1a1a;
+  --text-secondary: #6a5555;
+  --accent: #dc2626;
+  --accent-hover: #b91c1c;
+  --border: #ddd8d0;
+  --nav-bg: rgba(250, 248, 246, 0.92);
+  --nav-text: #2a1a1a;
+  --hero-bg: #e8d0c8;
+  --hero-text: #2a1a1a;
+  --hero-overlay: rgba(255, 255, 255, 0.3);
+  --hero-text-crimson: #dc2626;
+  --hero-text-blue: #6a5555;
+  --footer-bg: #ddd8d0;
+  --footer-text: #2a1a1a;
+  --shadow-color: rgba(42, 26, 26, 0.1);
+}
+
+/* --- Base theme consumption --- */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* ============================================
+   Responsive
+   ============================================ */
+@media (max-width: 768px) {
+  .nav-links {
+    gap: 16px;
+  }
+
+  .nav-links a {
+    font-size: 0.8rem;
+  }
+
+  .hero-content h1 {
+    font-size: 2rem;
+  }
+
+  .hero-sanskrit {
+    font-size: 0.7rem;
+    letter-spacing: 2px;
+  }
+
+  .hero-tagline {
+    font-size: 1rem;
+  }
+
+  .hero-sub {
+    font-size: 0.85rem;
+  }
+
+  .section {
+    padding: 48px 0;
+  }
+
+  .section-title {
+    font-size: 1.5rem;
+  }
+
+  .about-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .about-stats {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .rooms-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .amenities-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .materials-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .theme-switcher {
+    bottom: 16px;
+    right: 16px;
+    padding: 8px 12px;
+  }
+
+  .swatch {
+    width: 24px;
+    height: 24px;
+  }
+
+  .switcher-label {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .amenities-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .materials-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-stats {
+    grid-template-columns: 1fr;
+  }
+}

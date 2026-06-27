@@ -14,9 +14,13 @@ const ADMIN_EMAIL = "gorkhalibisauni@gmail.com"
 async function uploadImage(supabase: ReturnType<typeof createAdminClient>, file: File, folder: string) {
   const ext = file.name.split(".").pop()
   const fileName = `${folder}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`
-  const { data: uploadData } = await supabase.storage
+  const { data: uploadData, error: uploadError } = await supabase.storage
     .from("hotel_images")
     .upload(`${folder}/${fileName}`, file)
+  if (uploadError) {
+    console.error("Upload error:", uploadError)
+    return null
+  }
   if (!uploadData) return null
   const { data: urlData } = supabase.storage.from("hotel_images").getPublicUrl(uploadData.path)
   return urlData?.publicUrl ?? null

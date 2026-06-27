@@ -169,7 +169,7 @@ export function MenuManager({ initialItems }: { initialItems: FoodItem[] }) {
 
               <div className="space-y-2">
                 <Label>Images (select multiple)</Label>
-                <Input type="file" accept="image/*" multiple onChange={handleImageSelect} />
+                <Input type="file" name="images" accept="image/*" multiple onChange={handleImageSelect} />
                 {editingItem && editingItem.gallery && editingItem.gallery.length > 0 && (
                   <input type="hidden" name="existing_gallery" value={JSON.stringify(editingItem.gallery)} />
                 )}
