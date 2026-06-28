@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Orders | Gorkhali Bisauni Admin",
+  title: "Orders | Hotel North Star Inn Admin",
 }
 
 import { createClient } from "@/lib/supabase-server"

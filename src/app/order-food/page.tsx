@@ -2,8 +2,8 @@ import { createClient } from "@/lib/supabase-server"
 import { FoodOrderForm } from "@/components/FoodOrderForm"
 
 export const metadata = {
-  title: "Order Food | Gorkhali Bisauni Lodge And Hotel",
-  description: "Order food for delivery to your room at Gorkhali Bisauni Lodge And Hotel.",
+  title: "Order Food | Hotel North Star Inn",
+  description: "Order food for delivery to your room at Hotel North Star Inn.",
 }
 
 export default async function OrderFoodPage() {

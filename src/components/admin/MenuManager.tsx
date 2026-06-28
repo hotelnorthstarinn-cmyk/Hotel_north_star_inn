@@ -1,7 +1,10 @@
 "use client"
 
-import { useState, useEffect, useActionState } from "react"
+/* eslint-disable react-hooks/set-state-in-effect */
+
+import { useState, useEffect, useActionState, useRef } from "react"
 import { useFormStatus } from "react-dom"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -33,6 +36,8 @@ function SubmitButton({ label = "Save" }: { label?: string }) {
 }
 
 export function MenuManager({ initialItems }: { initialItems: FoodItem[] }) {
+  const router = useRouter()
+  const formRef = useRef<HTMLFormElement>(null)
   const [items, setItems] = useState(initialItems)
   const [editingItem, setEditingItem] = useState<FoodItem | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -44,12 +49,13 @@ export function MenuManager({ initialItems }: { initialItems: FoodItem[] }) {
   useEffect(() => {
     if (addState?.success) {
       toast.success("Food item added!")
-      setDialogOpen(false)
       setImagePreviews([])
+      formRef.current?.reset()
+      router.refresh()
     } else if (addState?.error) {
       toast.error(addState.error)
     }
-  }, [addState])
+  }, [addState, router])
 
   useEffect(() => {
     if (updateState?.success) {
@@ -57,10 +63,11 @@ export function MenuManager({ initialItems }: { initialItems: FoodItem[] }) {
       setEditingItem(null)
       setDialogOpen(false)
       setImagePreviews([])
+      router.refresh()
     } else if (updateState?.error) {
       toast.error(updateState.error)
     }
-  }, [updateState])
+  }, [updateState, router])
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this item?")) return
@@ -68,6 +75,7 @@ export function MenuManager({ initialItems }: { initialItems: FoodItem[] }) {
     if (result.success) {
       toast.success("Item deleted")
       setItems((prev) => prev.filter((i) => i.id !== id))
+      router.refresh()
     } else {
       toast.error(result.error)
     }
@@ -121,7 +129,7 @@ export function MenuManager({ initialItems }: { initialItems: FoodItem[] }) {
             <DialogHeader>
               <DialogTitle>{editingItem ? "Edit Food Item" : "Add New Food Item"}</DialogTitle>
             </DialogHeader>
-            <form action={editingItem ? updateAction : addAction} className="space-y-4">
+            <form ref={formRef} action={editingItem ? updateAction : addAction} className="space-y-4">
               {editingItem && <input type="hidden" name="id" value={editingItem.id} />}
 
               <div className="space-y-2">

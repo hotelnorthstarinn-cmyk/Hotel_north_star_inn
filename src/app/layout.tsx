@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
 import { Providers } from "@/app/providers"
-import { Navbar } from "@/components/Navbar"
+import { NavbarWrapper } from "@/components/NavbarWrapper"
 import { Footer } from "@/components/Footer"
 import "./globals.css"
 
@@ -16,12 +16,12 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: "Gorkhali Bisauni Lodge And Hotel | Gongabu, Kathmandu",
+  title: "Hotel North Star Inn | Gongabu, Kathmandu",
   description:
-    "Experience authentic Nepali hospitality at Gorkhali Bisauni Lodge And Hotel in Gongabu, Kathmandu. Book AC rooms, enjoy free parking, and explore Kathmandu tours.",
-  keywords: ["hotel", "kathmandu", "nepal", "gongabu", "gorkhali", "bisauni", "lodge", "booking"],
+    "Experience authentic Nepali hospitality at Hotel North Star Inn in Gongabu, Kathmandu. Book AC rooms, enjoy free parking, and explore Kathmandu tours.",
+  keywords: ["hotel", "kathmandu", "nepal", "gongabu", "north star", "inn", "lodge", "booking"],
   openGraph: {
-    title: "Gorkhali Bisauni Lodge And Hotel",
+    title: "Hotel North Star Inn",
     description: "Experience authentic Nepali hospitality in Kathmandu.",
     type: "website",
     locale: "en_US",
@@ -41,7 +41,7 @@ export default function RootLayout({
     >
       <body className="min-h-screen flex flex-col bg-background font-sans text-foreground antialiased">
         <Providers>
-          <Navbar />
+          <NavbarWrapper />
           <main className="flex-1">{children}</main>
           <Footer />
         </Providers>

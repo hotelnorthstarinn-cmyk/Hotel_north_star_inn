@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation"
-import Image from "next/image"
 import Link from "next/link"
 import { createClient } from "@/lib/supabase-server"
 import { Badge } from "@/components/ui/badge"
@@ -20,7 +19,7 @@ const statusLabel: Record<string, string> = {
 }
 
 export const metadata = {
-  title: "Room Details | Gorkhali Bisauni Lodge And Hotel",
+  title: "Room Details | Hotel North Star Inn",
 }
 
 export default async function RoomDetailPage({

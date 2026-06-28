@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase-server"
 import { PrintableBill } from "@/components/PrintableBill"
 import type { Bill, Booking } from "@/types"
 
-export const metadata = { title: "Bill | Gorkhali Bisauni Lodge And Hotel" }
+export const metadata = { title: "Bill | Hotel North Star Inn" }
 
 export default async function BillPage({
   params,
@@ -27,17 +27,10 @@ export default async function BillPage({
     .eq("booking_id", bookingId)
     .order("created_at", { ascending: false })
 
-  const { data: orders } = await supabase
-    .from("orders")
-    .select("*, order_items(*, food_items(*))")
-    .eq("booking_id", bookingId)
-    .order("created_at", { ascending: false })
-
   return (
     <PrintableBill
       booking={booking}
       bills={(bills ?? []) as unknown as Bill[]}
-      orders={orders ?? []}
     />
   )
 }

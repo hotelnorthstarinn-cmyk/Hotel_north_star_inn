@@ -1,7 +1,10 @@
 "use client"
 
-import { useState, useEffect, useActionState } from "react"
+/* eslint-disable react-hooks/set-state-in-effect */
+
+import { useState, useEffect, useActionState, useRef } from "react"
 import { useFormStatus } from "react-dom"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -36,6 +39,8 @@ const statusLabel: Record<string, string> = {
 }
 
 export function RoomManager({ initialRooms }: { initialRooms: Room[] }) {
+  const router = useRouter()
+  const formRef = useRef<HTMLFormElement>(null)
   const [rooms, setRooms] = useState(initialRooms)
   const [editingRoom, setEditingRoom] = useState<Room | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -47,12 +52,13 @@ export function RoomManager({ initialRooms }: { initialRooms: Room[] }) {
   useEffect(() => {
     if (addState?.success) {
       toast.success("Room added!")
-      setDialogOpen(false)
       setImagePreviews([])
+      formRef.current?.reset()
+      router.refresh()
     } else if (addState?.error) {
       toast.error(addState.error)
     }
-  }, [addState])
+  }, [addState, router])
 
   useEffect(() => {
     if (updateState?.success) {
@@ -60,10 +66,11 @@ export function RoomManager({ initialRooms }: { initialRooms: Room[] }) {
       setEditingRoom(null)
       setDialogOpen(false)
       setImagePreviews([])
+      router.refresh()
     } else if (updateState?.error) {
       toast.error(updateState.error)
     }
-  }, [updateState])
+  }, [updateState, router])
 
   async function handleDelete(id: string) {
     if (!confirm("Are you sure you want to delete this room?")) return
@@ -71,6 +78,7 @@ export function RoomManager({ initialRooms }: { initialRooms: Room[] }) {
     if (result.success) {
       toast.success("Room deleted")
       setRooms((prev) => prev.filter((r) => r.id !== id))
+      router.refresh()
     } else {
       toast.error(result.error)
     }
@@ -124,7 +132,7 @@ export function RoomManager({ initialRooms }: { initialRooms: Room[] }) {
             <DialogHeader>
               <DialogTitle>{editingRoom ? "Edit Room" : "Add New Room"}</DialogTitle>
             </DialogHeader>
-            <form action={editingRoom ? updateAction : addAction} className="space-y-5">
+            <form ref={formRef} action={editingRoom ? updateAction : addAction} className="space-y-5">
               {editingRoom && <input type="hidden" name="id" value={editingRoom.id} />}
 
               <div className="space-y-2">
@@ -190,6 +198,7 @@ export function RoomManager({ initialRooms }: { initialRooms: Room[] }) {
                 <Label>Images (select multiple)</Label>
                 <Input
                   type="file"
+                  name="images"
                   accept="image/*"
                   multiple
                   onChange={handleImageSelect}

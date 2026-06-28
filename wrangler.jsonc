@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "hotelnorthstarinn",
+  "compatibility_date": "2026-06-28",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      "service": "hotelnorthstarinn"
+    }
+  ],
+  "images": {
+    "binding": "IMAGES"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://aubndedknkeleyijhssu.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF1Ym5kZWRrbmtlbGV5aWpoc3N1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2MjA5MTYsImV4cCI6MjA5ODE5NjkxNn0.E5sWEMY5S0CqWpazSdcn6UeYigQL7YjUZhR6CLnKrV4"
+  }
+}

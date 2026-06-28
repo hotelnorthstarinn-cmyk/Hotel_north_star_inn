@@ -2,8 +2,8 @@ import { createClient } from "@/lib/supabase-server"
 import { FoodCard } from "@/components/FoodCard"
 
 export const metadata = {
-  title: "Food Menu | Gorkhali Bisauni Lodge And Hotel",
-  description: "Explore our delicious food menu at Gorkhali Bisauni Lodge And Hotel.",
+  title: "Food Menu | Hotel North Star Inn",
+  description: "Explore our delicious food menu at Hotel North Star Inn.",
 }
 
 export default async function FoodPage() {

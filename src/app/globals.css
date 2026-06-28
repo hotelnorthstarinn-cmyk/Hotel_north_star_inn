@@ -9,23 +9,23 @@
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 
-  /* Brand colors */
-  --color-crimson: #dc2626;
-  --color-crimson-dark: #b91c1c;
-  --color-crimson-light: #fca5a5;
-  --color-deep-blue: #1e3a5f;
-  --color-deep-blue-dark: #152a45;
-  --color-deep-blue-light: #3b6ba5;
+  /* North Star Signature Brand Colors */
+  --color-crimson: #c8a84e;
+  --color-crimson-dark: #b0903a;
+  --color-crimson-light: #d4c080;
+  --color-deep-blue: #2a2218;
+  --color-deep-blue-dark: #1a150e;
+  --color-deep-blue-light: #5a4e3e;
 }
 
 :root, .light {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #faf7f0;
+  --foreground: #2a2218;
 }
 
 .dark {
-  --background: #0a0f1a;
-  --foreground: #e2e8f0;
+  --background: #0f0c08;
+  --foreground: #e8e0d0;
 }
 
 body {

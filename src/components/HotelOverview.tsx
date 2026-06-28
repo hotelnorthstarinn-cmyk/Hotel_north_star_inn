@@ -9,8 +9,8 @@ export function HotelOverview() {
         <div className="grid items-center gap-8 md:grid-cols-2">
           <div className="relative h-64 overflow-hidden rounded-xl sm:h-80 md:h-96">
             <Image
-              src="/hotel.jpg"
-              alt="Gorkhali Bisauni Lodge And Hotel"
+              src="/hotel.png"
+              alt="Hotel North Star Inn"
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 50vw"
@@ -19,16 +19,16 @@ export function HotelOverview() {
           <div>
             <Image
               src="/images/logo.png"
-              alt="Gorkhali Bisauni Lodge And Hotel"
-              width={220}
+              alt="Hotel North Star Inn"
+              width={260}
               height={65}
-              className="mb-4 h-14 w-auto"
+              className="mb-4 h-16 w-auto"
             />
             <h2 className="mb-4 text-3xl font-bold tracking-tight text-deep-blue dark:text-deep-blue-light">
               A Home Away From Home
             </h2>
             <p className="mb-4 leading-relaxed text-zinc-600 dark:text-zinc-400">
-              At Gorkhali Bisauni Lodge And Hotel, we pride ourselves on creating a warm,
+              At Hotel North Star Inn, we pride ourselves on creating a warm,
               family-like atmosphere where every guest is treated with genuine Nepali hospitality.
               Located in the vibrant Gongabu area of Kathmandu, our lodge offers the perfect
               blend of comfort, convenience, and cultural authenticity.

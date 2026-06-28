@@ -2,8 +2,8 @@ import { createClient } from "@/lib/supabase-server"
 import { RoomCard } from "@/components/RoomCard"
 
 export const metadata = {
-  title: "Our Rooms | Gorkhali Bisauni Lodge And Hotel",
-  description: "Browse our available rooms at Gorkhali Bisauni Lodge And Hotel in Gongabu, Kathmandu.",
+  title: "Our Rooms | Hotel North Star Inn",
+  description: "Browse our available rooms at Hotel North Star Inn in Gongabu, Kathmandu.",
 }
 
 export default async function RoomsPage() {

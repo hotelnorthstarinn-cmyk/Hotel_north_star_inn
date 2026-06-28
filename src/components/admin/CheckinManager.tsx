@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useEffect, useActionState, useCallback } from "react"
+/* eslint-disable react-hooks/set-state-in-effect, @typescript-eslint/no-explicit-any */
+
+import { useState, useEffect, useActionState } from "react"
 import { useFormStatus } from "react-dom"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -8,14 +10,15 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
 import {
-  adminCreateBooking, checkinGuest, checkoutGuest, removeOrderItem, adminAddOrder,
+  adminCreateBooking, checkinGuest, addExtraCharge, cancelBooking,
 } from "@/lib/actions"
-import { Plus, LogIn, LogOut, User, FileText, Utensils, Eye, EyeOff, Calendar, CreditCard, MapPin, Phone, Mail } from "lucide-react"
+import { Plus, LogIn, LogOut, User, Eye, EyeOff, CreditCard, MapPin, Phone, Mail, XCircle } from "lucide-react"
+import { DateDisplay } from "@/components/DateDisplay"
 import { toast } from "sonner"
 import { ID_PROOF_TYPES } from "@/types"
-import type { Room, FoodItem } from "@/types"
+import type { Room } from "@/types"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 const statusColor: Record<string, "success" | "destructive" | "secondary"> = {
@@ -38,12 +41,10 @@ export function CheckinManager({
   activeBookings,
   pendingBookings,
   rooms,
-  menuItems = [],
 }: {
   activeBookings: any[]
   pendingBookings: any[]
   rooms: Room[]
-  menuItems: FoodItem[]
 }) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<"active" | "pending">("active")
@@ -52,31 +53,51 @@ export function CheckinManager({
   const [newBookingOpen, setNewBookingOpen] = useState(false)
   const [expandedId, setExpandedId] = useState<string | null>(null)
 
-  // Offline food order
-  const [foodOrderTarget, setFoodOrderTarget] = useState<any>(null)
-  const [foodDialogOpen, setFoodDialogOpen] = useState(false)
-  const [foodCart, setFoodCart] = useState<Record<string, number>>({})
-  const [orderNotes, setOrderNotes] = useState("")
-  const [addOrderState, addOrderAction] = useActionState(adminAddOrder, null)
+  // Add charge
+  const [chargeTarget, setChargeTarget] = useState<any>(null)
+  const [chargeDialogOpen, setChargeDialogOpen] = useState(false)
+  const [chargeState, chargeAction] = useActionState(addExtraCharge, null)
 
   const [checkinState, checkinAction] = useActionState(checkinGuest, null)
+  const [cancelState, cancelBookingAction] = useActionState(cancelBooking, null)
   const [createState, createAction] = useActionState(adminCreateBooking, null)
 
+  function handleCloseCharge() {
+    setChargeDialogOpen(false)
+    setChargeTarget(null)
+  }
+
+  function handleCloseCheckin() {
+    setCheckinDialogOpen(false)
+    setCheckinTarget(null)
+  }
+
+  function handleCloseNewBooking() {
+    setNewBookingOpen(false)
+  }
+
   useEffect(() => {
-    if (checkinState?.success) { toast.success("Guest checked in!"); setCheckinDialogOpen(false); setCheckinTarget(null) }
+    if (chargeState?.success) { toast.success("Charge added!"); handleCloseCharge(); router.refresh() }
+    else if (chargeState?.error) toast.error(chargeState.error)
+  }, [chargeState, router])
+
+  useEffect(() => {
+    if (checkinState?.success) { toast.success("Guest checked in!"); handleCloseCheckin() }
     else if (checkinState?.error) toast.error(checkinState.error)
   }, [checkinState])
 
   useEffect(() => {
-    if (createState?.success) { toast.success("Guest checked in!"); setNewBookingOpen(false); router.refresh() }
+    if (cancelState?.success) { toast.success("Booking cancelled!"); router.refresh() }
+    else if (cancelState?.error) toast.error(cancelState.error)
+  }, [cancelState, router])
+
+  useEffect(() => {
+    if (createState?.success) { toast.success("Guest checked in!"); handleCloseNewBooking(); router.refresh() }
     else if (createState?.error) toast.error(createState.error)
   }, [createState, router])
 
-  useEffect(() => {
-    if (addOrderState?.success) { toast.success("Food order added & charged!"); setFoodDialogOpen(false); setFoodCart({}); setOrderNotes(""); router.refresh() }
-    else if (addOrderState?.error) toast.error(addOrderState.error)
-  }, [addOrderState, router])
-
+  const todayStr = new Date().toISOString().split("T")[0]
+  const [newCheckIn, setNewCheckIn] = useState(todayStr)
   const currentList = activeTab === "active" ? activeBookings : pendingBookings
 
   return (
@@ -125,11 +146,11 @@ export function CheckinManager({
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <Label>Check-in</Label>
-                    <Input name="check_in" type="date" defaultValue={new Date().toISOString().split("T")[0]} required />
+                    <Input name="check_in" type="date" defaultValue={todayStr} min={todayStr} required onChange={(e) => setNewCheckIn(e.target.value)} />
                   </div>
                   <div className="space-y-1">
-                    <Label>Check-out</Label>
-                    <Input name="check_out" type="date" required />
+                    <Label>Check-out <span className="text-zinc-400 font-normal">(optional)</span></Label>
+                    <Input name="check_out" type="date" min={newCheckIn} />
                   </div>
                 </div>
                 <div className="space-y-1">
@@ -186,7 +207,7 @@ export function CheckinManager({
                         </Badge>
                       </div>
                       <p className="text-xs text-zinc-500 truncate">
-                        {room?.name ?? "Room"} ({booking.room_code}) &middot; {booking.check_in} to {booking.check_out}
+                        {room?.name ?? "Room"} ({booking.room_code}) &middot; <DateDisplay date={booking.check_in} /> to <DateDisplay date={booking.check_out} />
                       </p>
                     </div>
                   </div>
@@ -196,8 +217,8 @@ export function CheckinManager({
                     </Button>
                     {booking.checkin_status === "checked_in" && (
                       <>
-                        <Button variant="outline" size="sm" onClick={() => { setFoodOrderTarget(booking); setFoodCart({}); setFoodDialogOpen(true) }}>
-                          <Utensils className="mr-1 h-3 w-3" /> Add Food
+                        <Button variant="outline" size="sm" onClick={() => { setChargeTarget(booking); setChargeDialogOpen(true) }}>
+                          <CreditCard className="mr-1 h-3 w-3" /> Add Charge
                         </Button>
                         <Link href={`/admin/checkout/${booking.id}`}>
                           <Button size="sm">
@@ -207,25 +228,35 @@ export function CheckinManager({
                       </>
                     )}
                     {booking.checkin_status === "pending" && (
-                      <Dialog open={checkinDialogOpen && checkinTarget?.id === booking.id}
-                        onOpenChange={(o) => { setCheckinDialogOpen(o); if (!o) setCheckinTarget(null) }}>
-                        <DialogTrigger asChild>
-                          <Button size="sm" onClick={() => setCheckinTarget(booking)}>
-                            <LogIn className="mr-1 h-3 w-3" /> Check In
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader><DialogTitle>Check In {booking.user_name}</DialogTitle></DialogHeader>
-                          <form action={checkinAction} className="space-y-4">
+                      <>
+                        <Dialog open={checkinDialogOpen && checkinTarget?.id === booking.id}
+                          onOpenChange={(o) => { setCheckinDialogOpen(o); if (!o) setCheckinTarget(null) }}>
+                          <DialogTrigger asChild>
+                            <Button size="sm" onClick={() => setCheckinTarget(booking)}>
+                              <LogIn className="mr-1 h-3 w-3" /> Check In
+                            </Button>
+                          </DialogTrigger>
+                          <DialogContent>
+                            <DialogHeader><DialogTitle>Check In {booking.user_name}</DialogTitle></DialogHeader>
+                            <form action={checkinAction} className="space-y-4">
+                              <input type="hidden" name="id" value={booking.id} />
+                              <div className="space-y-1">
+                                <Label>Security Deposit (Rs.)</Label>
+                                <Input name="security_deposit" type="number" defaultValue="0" />
+                              </div>
+                              <SubmitButton label="Confirm Check In" />
+                            </form>
+                          </DialogContent>
+                        </Dialog>
+                        {booking.source === "online" && (
+                          <form action={cancelBookingAction}>
                             <input type="hidden" name="id" value={booking.id} />
-                            <div className="space-y-1">
-                              <Label>Security Deposit (Rs.)</Label>
-                              <Input name="security_deposit" type="number" defaultValue="0" />
-                            </div>
-                            <SubmitButton label="Confirm Check In" />
+                            <Button type="submit" size="sm" variant="destructive">
+                              <XCircle className="mr-1 h-3 w-3" /> Cancel
+                            </Button>
                           </form>
-                        </DialogContent>
-                      </Dialog>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -249,7 +280,7 @@ export function CheckinManager({
                       <span className="block text-xs font-medium text-zinc-400 uppercase">Room</span>
                       <p className="mt-0.5">{room?.name} ({booking.room_code})</p>
                       <p className="mt-0.5 text-zinc-500">Rs.{room?.price}/night</p>
-                      {booking.checkin_time && <p className="mt-0.5 text-xs text-zinc-400">Checked in: {new Date(booking.checkin_time).toLocaleString()}</p>}
+                      {booking.checkin_time && <p className="mt-0.5 text-xs text-zinc-400">Checked in: <DateDisplay date={booking.checkin_time} /></p>}
                     </div>
                   </div>
                 )}
@@ -259,44 +290,27 @@ export function CheckinManager({
         })}
       </div>
 
-      {/* Offline Food Order Dialog */}
-      <Dialog open={foodDialogOpen} onOpenChange={setFoodDialogOpen}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
-          <DialogHeader><DialogTitle>Add Food Order — {foodOrderTarget?.user_name}</DialogTitle></DialogHeader>
-          <form action={addOrderAction} className="space-y-4">
-            <input type="hidden" name="booking_id" value={foodOrderTarget?.id ?? ""} />
-            <input type="hidden" name="items" value={JSON.stringify(
-              Object.entries(foodCart).map(([id, qty]) => {
-                const item = menuItems.find((i: FoodItem) => i.id === id)
-                return { food_item_id: id, quantity: qty, unit_price: item?.price ?? 0, name: item?.name ?? "" }
-              })
-            )} />
-            <div className="max-h-60 space-y-1.5 overflow-y-auto">
-              {menuItems.length > 0 ? (
-                menuItems.filter((i: FoodItem) => i.is_available).map((item: FoodItem) => (
-                  <div key={item.id} className="flex items-center justify-between rounded-md bg-zinc-50 px-3 py-2 text-sm dark:bg-zinc-800">
-                    <div>
-                      <span className="font-medium">{item.name}</span>
-                      <span className="ml-2 text-xs text-zinc-400">Rs.{item.price}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button type="button" onClick={() => setFoodCart((c) => ({ ...c, [item.id]: Math.max((c[item.id] || 0) - 1, 0) }))}
-                        className="flex h-6 w-6 items-center justify-center rounded border text-xs hover:bg-zinc-200 dark:border-zinc-600 dark:hover:bg-zinc-700">−</button>
-                      <span className="w-5 text-center text-xs font-medium">{foodCart[item.id] || 0}</span>
-                      <button type="button" onClick={() => setFoodCart((c) => ({ ...c, [item.id]: (c[item.id] || 0) + 1 }))}
-                        className="flex h-6 w-6 items-center justify-center rounded border text-xs hover:bg-zinc-200 dark:border-zinc-600 dark:hover:bg-zinc-700">+</button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="py-4 text-center text-sm text-zinc-400">No menu items available</p>
-              )}
-            </div>
+      {/* Add Charge Dialog */}
+      <Dialog open={chargeDialogOpen} onOpenChange={setChargeDialogOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader><DialogTitle>Add Charge — {chargeTarget?.user_name}</DialogTitle></DialogHeader>
+          <form action={chargeAction} className="space-y-4">
+            <input type="hidden" name="booking_id" value={chargeTarget?.id ?? ""} />
             <div className="space-y-1">
-              <Label>Notes</Label>
-              <Input name="notes" value={orderNotes} onChange={(e) => setOrderNotes(e.target.value)} />
+              <Label>Description</Label>
+              <Input name="description" placeholder="e.g. Parking, Chowmein, Extra Bed" required />
             </div>
-            <SubmitButton label="Add & Charge to Bill" />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>Unit Price (Rs.)</Label>
+                <Input name="amount" type="number" placeholder="0" required />
+              </div>
+              <div className="space-y-1">
+                <Label>Quantity</Label>
+                <Input name="quantity" type="number" defaultValue="1" min="1" />
+              </div>
+            </div>
+            <SubmitButton label="Add Charge" />
           </form>
         </DialogContent>
       </Dialog>

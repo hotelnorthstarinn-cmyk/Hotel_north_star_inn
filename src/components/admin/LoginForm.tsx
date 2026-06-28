@@ -1,8 +1,7 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { createClient } from "@/lib/supabase"
 import { adminLogin } from "@/lib/actions"
 import { useActionState } from "react"
 import { useFormStatus } from "react-dom"
@@ -38,7 +37,7 @@ export function LoginForm() {
       <div className="w-full max-w-sm space-y-6">
         <div className="text-center">
           <h1 className="text-2xl font-bold tracking-tight">
-            <span className="text-crimson">Gorkhali</span>{" "}
+            Hotel <span className="text-crimson">North Star</span>{" "}
             <span className="text-deep-blue">Admin</span>
           </h1>
           <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">

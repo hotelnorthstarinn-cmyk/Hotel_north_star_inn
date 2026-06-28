@@ -1,14 +1,14 @@
 "use client"
 
-import { useActionState, useEffect } from "react"
+import { useActionState, useEffect, useState } from "react"
 import { useFormStatus } from "react-dom"
 import { createBooking } from "@/lib/actions"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { toast } from "sonner"
 import { useGuestInfo } from "@/lib/guest-storage"
+import { adToBsFormatted } from "@/lib/nepali-date"
 import type { Room } from "@/types"
 
 function SubmitButton() {
@@ -22,7 +22,11 @@ function SubmitButton() {
 
 export function BookingForm({ rooms }: { rooms: Room[] }) {
   const { guest, saveGuest } = useGuestInfo()
+  const [roomId, setRoomId] = useState("")
   const [state, formAction] = useActionState(createBooking, null)
+  const [checkIn, setCheckIn] = useState("")
+  const [checkOut, setCheckOut] = useState("")
+  const todayStr = new Date().toISOString().split("T")[0]
 
   useEffect(() => {
     if (state?.success && state.user_email) {
@@ -70,30 +74,39 @@ export function BookingForm({ rooms }: { rooms: Room[] }) {
             </div>
             <div className="space-y-2">
               <Label htmlFor="room_id">Room</Label>
-              <Select name="room_id" required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a room" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableRooms.length === 0 ? (
-                    <div className="px-2 py-4 text-center text-sm text-zinc-500">No rooms available</div>
-                  ) : (
-                    availableRooms.map((room) => (
-                      <SelectItem key={room.id} value={room.id}>
-                        {room.name} - Rs.{room.price}
-                      </SelectItem>
-                    ))
-                  )}
-                </SelectContent>
-              </Select>
+              <select
+                name="room_id"
+                id="room_id"
+                value={roomId}
+                onChange={(e) => setRoomId(e.target.value)}
+                required
+                className="flex h-9 w-full rounded-md border border-zinc-300 bg-background px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-deep-blue dark:border-zinc-700 dark:bg-zinc-900"
+              >
+                <option value="" disabled>Select a room</option>
+                {availableRooms.length === 0 ? (
+                  <option value="" disabled>No rooms available</option>
+                ) : (
+                  availableRooms.map((room) => (
+                    <option key={room.id} value={room.id}>
+                      {room.name} - Rs.{room.price}
+                    </option>
+                  ))
+                )}
+              </select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="check_in">Check-in Date</Label>
-              <Input id="check_in" name="check_in" type="date" required />
+              <Input id="check_in" name="check_in" type="date" min={todayStr} required value={checkIn} onChange={(e) => setCheckIn(e.target.value)} />
+              <p className="text-xs text-zinc-500">
+                {checkIn ? adToBsFormatted(checkIn) : "—"} <span className="text-zinc-400">(BS)</span>
+              </p>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="check_out">Check-out Date</Label>
-              <Input id="check_out" name="check_out" type="date" required />
+              <Label htmlFor="check_out">Check-out Date <span className="text-zinc-400 font-normal">(optional)</span></Label>
+              <Input id="check_out" name="check_out" type="date" min={checkIn || todayStr} value={checkOut} onChange={(e) => setCheckOut(e.target.value)} />
+              <p className="text-xs text-zinc-500">
+                {checkOut ? adToBsFormatted(checkOut) : "—"} <span className="text-zinc-400">(BS)</span>
+              </p>
             </div>
           </div>
           <div className="mt-6">

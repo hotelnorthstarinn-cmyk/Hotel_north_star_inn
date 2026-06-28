@@ -1,7 +1,7 @@
 import { LoginForm } from "@/components/admin/LoginForm"
 
 export const metadata = {
-  title: "Admin Login | Gorkhali Bisauni",
+  title: "Admin Login | Hotel North Star Inn",
 }
 
 export default function AdminLoginPage() {

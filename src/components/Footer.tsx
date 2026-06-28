@@ -42,7 +42,7 @@ export function Footer() {
         <div className="grid gap-8 md:grid-cols-3">
           <div>
             <h3 className="mb-4 text-lg font-semibold text-deep-blue dark:text-deep-blue-light">
-              Gorkhali Bisauni Lodge &amp; Hotel
+              Hotel North Star Inn
             </h3>
             <ul className="space-y-3 text-sm text-zinc-600 dark:text-zinc-400">
               <li className="flex items-center gap-2">
@@ -56,9 +56,9 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <a href="mailto:gorkhalibisauni@gmail.com" className="flex items-center gap-2 transition-colors hover:text-deep-blue dark:hover:text-deep-blue-light">
+                <a href="mailto:hotelnorthstarinn@gmail.com" className="flex items-center gap-2 transition-colors hover:text-deep-blue dark:hover:text-deep-blue-light">
                   <Mail className="h-4 w-4 shrink-0 text-crimson" />
-                  gorkhalibisauni@gmail.com
+                  hotelnorthstarinn@gmail.com
                 </a>
               </li>
               <li className="text-zinc-500 dark:text-zinc-500">
@@ -78,7 +78,7 @@ export function Footer() {
               <a href="tel:+977014356753" className="flex items-center gap-1 text-zinc-600 transition-colors hover:text-deep-blue dark:text-zinc-400 dark:hover:text-deep-blue-light">
                 <Phone className="h-3.5 w-3.5" /> Click to Call
               </a>
-              <a href="mailto:gorkhalibisauni@gmail.com" className="flex items-center gap-1 text-zinc-600 transition-colors hover:text-deep-blue dark:text-zinc-400 dark:hover:text-deep-blue-light">
+              <a href="mailto:hotelnorthstarinn@gmail.com" className="flex items-center gap-1 text-zinc-600 transition-colors hover:text-deep-blue dark:text-zinc-400 dark:hover:text-deep-blue-light">
                 <Mail className="h-3.5 w-3.5" /> Send Email
               </a>
             </nav>
@@ -113,7 +113,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 border-t border-zinc-200 pt-6 text-center text-xs text-zinc-500 dark:border-zinc-800">
-          &copy; {new Date().getFullYear()} Gorkhali Bisauni Lodge And Hotel, Gongabu, Kathmandu. All rights reserved.
+          &copy; {new Date().getFullYear()} Hotel North Star Inn, Gongabu, Kathmandu. All rights reserved.
         </div>
       </div>
     </footer>

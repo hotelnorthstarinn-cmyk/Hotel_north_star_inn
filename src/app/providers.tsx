@@ -2,6 +2,7 @@
 
 import { ThemeProvider as NextThemesProvider } from "next-themes"
 import { Toaster } from "sonner"
+import { DateProvider } from "@/lib/date-context"
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -11,7 +12,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       enableSystem
       disableTransitionOnChange
     >
-      {children}
+      <DateProvider>
+        {children}
+      </DateProvider>
       <Toaster richColors position="top-center" />
     </NextThemesProvider>
   )

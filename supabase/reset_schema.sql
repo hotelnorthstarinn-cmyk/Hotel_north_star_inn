@@ -1,7 +1,39 @@
 -- ============================================
--- Hotel North Star Inn - COMPLETE SCHEMA
+-- Hotel North Star Inn - RESET & RECREATE
+-- Drops everything then recreates from scratch
 -- Run this in Supabase Dashboard → SQL Editor
 -- ============================================
+
+-- ===== DROP EXISTING =====
+
+DROP TRIGGER IF EXISTS on_booking_created ON bookings;
+DROP TRIGGER IF EXISTS on_booking_status_change ON bookings;
+
+DROP FUNCTION IF EXISTS auto_create_bill();
+DROP FUNCTION IF EXISTS update_room_status_on_booking();
+DROP FUNCTION IF EXISTS lookup_guest(TEXT, TEXT);
+DROP FUNCTION IF EXISTS is_room_available(UUID, DATE, DATE);
+DROP FUNCTION IF EXISTS update_bill_totals(UUID);
+DROP FUNCTION IF EXISTS get_booking_bill(UUID);
+DROP FUNCTION IF EXISTS monthly_revenue(INT, INT);
+DROP FUNCTION IF EXISTS add_order_to_bill(UUID);
+DROP FUNCTION IF EXISTS remove_order_from_bill(UUID);
+
+DROP POLICY IF EXISTS "Public can view hotel images" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated admins can upload images" ON storage.objects;
+DROP POLICY IF EXISTS "Authenticated admins can delete images" ON storage.objects;
+
+DROP TABLE IF EXISTS bill_charges CASCADE;
+DROP TABLE IF EXISTS bills CASCADE;
+DROP TABLE IF EXISTS order_items CASCADE;
+DROP TABLE IF EXISTS orders CASCADE;
+DROP TABLE IF EXISTS bookings CASCADE;
+DROP TABLE IF EXISTS rooms CASCADE;
+DROP TABLE IF EXISTS food_menu CASCADE;
+DROP TABLE IF EXISTS reviews CASCADE;
+DROP TABLE IF EXISTS expenses CASCADE;
+
+-- ===== RECREATE =====
 
 -- 1. ROOMS TABLE
 CREATE TABLE rooms (
@@ -34,7 +66,6 @@ CREATE POLICY "Authenticated admins can delete"
 
 
 -- 2. BOOKINGS TABLE
--- Supports both online and offline (walk-in) guests with full check-in/check-out tracking
 CREATE TABLE bookings (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
@@ -100,8 +131,6 @@ CREATE POLICY "Authenticated admins can delete"
 
 
 -- 4. ORDERS TABLE
--- status flow: pending → approved → preparing → delivered, or rejected/cancelled at any point
--- bill is only charged when status changes to 'approved'
 CREATE TABLE orders (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
@@ -225,7 +254,7 @@ CREATE POLICY "Anyone can create reviews"
   ON reviews FOR INSERT WITH CHECK (true);
 
 
--- 9. HOTEL EXPENSES TABLE (for analytics)
+-- 9. HOTEL EXPENSES TABLE
 CREATE TABLE expenses (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
@@ -246,10 +275,6 @@ CREATE POLICY "Authenticated admins can manage expenses"
 INSERT INTO storage.buckets (id, name, public) VALUES ('hotel_images', 'hotel_images', true)
 ON CONFLICT (id) DO NOTHING;
 
-DROP POLICY IF EXISTS "Public can view hotel images" ON storage.objects;
-DROP POLICY IF EXISTS "Authenticated admins can upload images" ON storage.objects;
-DROP POLICY IF EXISTS "Authenticated admins can delete images" ON storage.objects;
-
 CREATE POLICY "Public can view hotel images"
   ON storage.objects FOR SELECT USING (bucket_id = 'hotel_images');
 
@@ -260,7 +285,7 @@ CREATE POLICY "Authenticated admins can delete images"
   ON storage.objects FOR DELETE USING (bucket_id = 'hotel_images' AND auth.role() = 'authenticated');
 
 
--- 11. FUNCTION: Lookup guest by email + room_code (for food ordering)
+-- 11. FUNCTION: Lookup guest by email + room_code
 CREATE OR REPLACE FUNCTION lookup_guest(p_email TEXT, p_room_code TEXT)
 RETURNS TABLE(user_name TEXT, user_phone TEXT, booking_id UUID) AS $$
 BEGIN
@@ -403,7 +428,7 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
--- 18. FUNCTION: Remove order amount from bill (when rejected/cancelled/adjusted)
+-- 18. FUNCTION: Remove order amount from bill
 CREATE OR REPLACE FUNCTION remove_order_from_bill(p_order_id UUID)
 RETURNS VOID AS $$
 DECLARE
@@ -416,7 +441,6 @@ BEGIN
       total = GREATEST(total - v_order.total, 0)
   WHERE booking_id = v_order.booking_id;
 
-  -- Clean up bills with zero total
   DELETE FROM bills WHERE total <= 0 AND food_charge <= 0 AND room_charge <= 0;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

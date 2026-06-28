@@ -22,7 +22,7 @@ export interface Booking {
   id_proof_type: string
   id_proof_number: string
   check_in: string
-  check_out: string
+  check_out: string | null
   room_id: string
   room_code: string
   status: "confirmed" | "cancelled" | "completed"

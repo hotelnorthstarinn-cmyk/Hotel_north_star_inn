@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BedDouble, CalendarCheck, UtensilsCrossed } from "lucide-react"
 
 export const metadata = {
-  title: "Dashboard | Gorkhali Bisauni Admin",
+  title: "Dashboard | Hotel North Star Inn Admin",
 }
 
 export default async function AdminDashboardPage() {

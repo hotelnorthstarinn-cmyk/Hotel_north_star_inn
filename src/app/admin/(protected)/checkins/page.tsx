@@ -1,12 +1,12 @@
 import { createClient } from "@/lib/supabase-server"
 import { CheckinManager } from "@/components/admin/CheckinManager"
 
-export const metadata = { title: "Check-ins | Gorkhali Bisauni Admin" }
+export const metadata = { title: "Check-ins | Hotel North Star Inn Admin" }
 
 export default async function AdminCheckinsPage() {
   const supabase = await createClient()
 
-  const [active, pending, roomsResult, menuResult] = await Promise.all([
+  const [active, pending, roomsResult] = await Promise.all([
     supabase
       .from("bookings")
       .select("*, rooms(name, room_code, price)")
@@ -23,7 +23,6 @@ export default async function AdminCheckinsPage() {
       .select("*")
       .in("status", ["available", "maintenance"])
       .order("name"),
-    supabase.from("food_menu").select("*").order("name"),
   ])
 
   return (
@@ -31,7 +30,6 @@ export default async function AdminCheckinsPage() {
       activeBookings={active.data ?? []}
       pendingBookings={pending.data ?? []}
       rooms={roomsResult.data ?? []}
-      menuItems={menuResult.data ?? []}
     />
   )
 }

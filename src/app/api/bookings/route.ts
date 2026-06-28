@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { user_name, user_email, user_phone, check_in, check_out, room_id } = body
 
-    if (!user_name || !user_email || !user_phone || !check_in || !check_out || !room_id) {
+    if (!user_name || !user_email || !user_phone || !check_in || !room_id) {
       return NextResponse.json({ error: "All fields are required" }, { status: 400 })
     }
 

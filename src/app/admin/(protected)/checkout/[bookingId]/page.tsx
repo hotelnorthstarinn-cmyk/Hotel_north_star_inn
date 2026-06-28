@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase-server"
 import { CheckoutClient } from "@/components/admin/CheckoutClient"
 import type { Booking, Bill, Order, Room } from "@/types"
 
-export const metadata = { title: "Check Out | Gorkhali Bisauni Admin" }
+export const metadata = { title: "Check Out | Hotel North Star Inn Admin" }
 
 export default async function CheckoutPage({
   params,

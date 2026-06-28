@@ -2,12 +2,17 @@
 
 import { createClient } from "@/lib/supabase-server"
 import { createAdminClient } from "@/lib/supabase-admin"
-import { Resend } from "resend"
+import sgMail from "@sendgrid/mail"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import { formatDateWithBoth } from "@/lib/nepali-date"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-const ADMIN_EMAIL = "gorkhalibisauni@gmail.com"
+const ADMIN_EMAIL = "hotelnorthstarinn@gmail.com"
+
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+}
+
 
 // ========== HELPER ==========
 
@@ -35,24 +40,25 @@ export async function createBooking(prevState: unknown, formData: FormData) {
   const user_email = formData.get("user_email") as string
   const user_phone = formData.get("user_phone") as string
   const check_in = formData.get("check_in") as string
-  const check_out = formData.get("check_out") as string
+  const check_out = (formData.get("check_out") as string) || null
   const room_id = formData.get("room_id") as string
 
-  if (!user_name || !user_email || !user_phone || !check_in || !check_out || !room_id) {
+  if (!user_name || !user_email || !user_phone || !check_in || !room_id) {
     return { error: "All fields are required" }
   }
 
-  if (new Date(check_in) >= new Date(check_out)) {
+  if (check_out && new Date(check_in) >= new Date(check_out)) {
     return { error: "Check-out date must be after check-in date" }
   }
 
-  const { data: room } = await supabase
-    .from("rooms")
-    .select("room_code")
-    .eq("id", room_id)
-    .single()
+    const { data: room } = await supabase
+      .from("rooms")
+      .select("room_code, name")
+      .eq("id", room_id)
+      .single()
 
-  const room_code = room?.room_code ?? ""
+    const room_code = room?.room_code ?? ""
+    const room_name = room?.name ?? "Room"
 
   const { error } = await supabase.from("bookings").insert({
     user_name, user_email, user_phone, check_in, check_out, room_id, room_code,
@@ -62,30 +68,133 @@ export async function createBooking(prevState: unknown, formData: FormData) {
   if (error) return { error: error.message }
 
   try {
-    await resend.emails.send({
-      from: "onboarding@resend.dev",
-      to: [user_email, ADMIN_EMAIL],
-      subject: "Booking Confirmed - Gorkhali Bisauni Lodge And Hotel",
-      html: `
-        <h1>Booking Confirmed!</h1>
-        <p>Dear ${user_name},</p>
-        <p>Your booking at Gorkhali Bisauni Lodge And Hotel has been confirmed.</p>
-        <p><strong>Check-in:</strong> ${check_in}</p>
-        <p><strong>Check-out:</strong> ${check_out}</p>
-        ${room_code ? `<p><strong>Your Room Code:</strong> ${room_code}</p>
-        <p>Use this code with your email to order food during your stay.</p>` : ""}
-        <p>Thank you for choosing us!</p>
-        <p><strong>Gorkhali Bisauni Lodge And Hotel</strong><br/>
-        Gongabu, Kathmandu, Nepal<br/>
-        Tel: 01-4356753</p>
-      `,
-    })
+    await Promise.race([
+      sgMail.send({
+        from: { email: ADMIN_EMAIL, name: "Hotel North Star Inn" },
+        to: [user_email, ADMIN_EMAIL],
+        subject: "Booking Confirmed - Hotel North Star Inn",
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0d8ce; border-radius: 8px;">
+            <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #c8a84e;">
+              <h1 style="color: #2a2218; margin: 0;">Hotel North Star Inn</h1>
+              <p style="color: #7a6e5e; margin: 4px 0 0;">Gongabu, Kathmandu, Nepal</p>
+            </div>
+            <div style="padding: 20px 0;">
+              <h2 style="color: #2a2218;">Thank You for Your Booking!</h2>
+              <p>Dear ${user_name},</p>
+              <p>Your booking at <strong>Hotel North Star Inn</strong> has been confirmed. We look forward to welcoming you!</p>
+              <table style="width: 100%; border-collapse: collapse; margin: 16px 0;">
+                <tr>
+                  <td style="padding: 8px 12px; background: #f5f0e8; font-weight: bold; width: 140px;">Check-in</td>
+                  <td style="padding: 8px 12px;">${formatDateWithBoth(check_in)}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 12px; background: #f5f0e8; font-weight: bold;">Check-out</td>
+                  <td style="padding: 8px 12px;">${check_out ? formatDateWithBoth(check_out) : "—"}</td>
+                </tr>
+              ${room_name ? `
+                <tr>
+                  <td style="padding: 8px 12px; background: #f5f0e8; font-weight: bold;">Room</td>
+                  <td style="padding: 8px 12px;">${room_name}</td>
+                </tr>` : ""}
+                <tr>
+                  <td style="padding: 8px 12px; background: #f5f0e8; font-weight: bold;">Guest Name</td>
+                  <td style="padding: 8px 12px;">${user_name}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 8px 12px; background: #f5f0e8; font-weight: bold;">Contact</td>
+                  <td style="padding: 8px 12px;">${user_phone}</td>
+                </tr>
+              </table>
+              <p style="font-size: 14px; color: #5a4e3e;">Use your email and room code to order food during your stay.</p>
+              <hr style="border: none; border-top: 1px solid #e0d8ce; margin: 20px 0;" />
+              <h3 style="color: #2a2218;">Hotel North Star Inn</h3>
+              <p style="font-size: 14px; color: #5a4e3e; margin: 4px 0;">
+                Gongabu, Kathmandu, Nepal<br/>
+                Tel: 01-4356753<br/>
+                Email: hotelnorthstarinn@gmail.com
+              </p>
+            </div>
+            <div style="text-align: center; padding-top: 16px; border-top: 1px solid #e0d8ce; font-size: 12px; color: #9a8e7e;">
+              <p style="margin: 0;">&copy; 2026 Hotel North Star Inn. All rights reserved.</p>
+            </div>
+          </div>
+        `,
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("Email timeout")), 5000)),
+    ])
   } catch { /* non-blocking */ }
 
   revalidatePath("/")
   revalidatePath("/admin/dashboard")
   revalidatePath("/admin/checkins")
   return { success: true, user_name, user_email, user_phone, room_code }
+}
+
+export async function cancelBooking(prevState: unknown, formData: FormData) {
+  const supabase = createAdminClient()
+  const id = formData.get("id") as string
+
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("user_name, user_email, user_phone, room_code, check_in, check_out, source, room_id")
+    .eq("id", id)
+    .single()
+
+  if (!booking) return { error: "Booking not found" }
+  if (booking.source !== "online") return { error: "Only online bookings can be cancelled" }
+
+  const { data: room } = await supabase
+    .from("rooms")
+    .select("name")
+    .eq("id", booking.room_id)
+    .single()
+  const roomName = room?.name ?? "Room"
+
+  const { error } = await supabase
+    .from("bookings")
+    .update({ status: "cancelled" })
+    .eq("id", id)
+
+  if (error) return { error: error.message }
+
+  try {
+    await Promise.race([
+      sgMail.send({
+        from: { email: ADMIN_EMAIL, name: "Hotel North Star Inn" },
+        to: [booking.user_email, ADMIN_EMAIL],
+        subject: "Booking Cancelled - Hotel North Star Inn",
+        html: `
+          <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;border:1px solid #e0d8ce;border-radius:8px">
+            <div style="text-align:center;padding-bottom:16px;border-bottom:2px solid #c8a84e">
+              <h1 style="color:#2a2218;margin:0">Hotel North Star Inn</h1>
+              <p style="color:#7a6e5e;margin:4px 0 0">Gongabu, Kathmandu, Nepal</p>
+            </div>
+            <div style="padding:16px 0">
+              <h2 style="color:#2a2218;">Booking Cancelled</h2>
+              <p>Dear ${booking.user_name},</p>
+              <p>Your booking at <strong>Hotel North Star Inn</strong> has been cancelled as requested.</p>
+              <table style="width:100%;border-collapse:collapse;margin:12px 0">
+                <tr><td style="padding:6px 12px;background:#f5f0e8;font-weight:bold;width:120px">Room</td><td style="padding:6px 12px">${roomName}</td></tr>
+                <tr><td style="padding:6px 12px;background:#f5f0e8;font-weight:bold">Check-in</td><td style="padding:6px 12px">${formatDateWithBoth(booking.check_in)}</td></tr>
+                ${booking.check_out ? `<tr><td style="padding:6px 12px;background:#f5f0e8;font-weight:bold">Check-out</td><td style="padding:6px 12px">${formatDateWithBoth(booking.check_out)}</td></tr>` : ""}
+              </table>
+              <p style="font-size:14px;color:#5a4e3e;">We hope to welcome you in the future.</p>
+            </div>
+            <div style="text-align:center;padding-top:12px;border-top:1px solid #e0d8ce;font-size:12px;color:#9a8e7e">
+              <p style="margin:0">Hotel North Star Inn &mdash; Gongabu, Kathmandu, Nepal</p>
+              <p style="margin:2px 0">Tel: 01-4356753 | Email: hotelnorthstarinn@gmail.com</p>
+            </div>
+          </div>
+        `,
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error("Email timeout")), 5000)),
+    ])
+  } catch { /* non-blocking */ }
+
+  revalidatePath("/admin/checkins")
+  revalidatePath("/admin/dashboard")
+  return { success: true }
 }
 
 export async function adminCreateBooking(prevState: unknown, formData: FormData) {
@@ -98,12 +207,12 @@ export async function adminCreateBooking(prevState: unknown, formData: FormData)
   const id_proof_type = formData.get("id_proof_type") as string
   const id_proof_number = formData.get("id_proof_number") as string
   const check_in = formData.get("check_in") as string
-  const check_out = formData.get("check_out") as string
+  const check_out = (formData.get("check_out") as string) || null
   const room_id = formData.get("room_id") as string
   const security_deposit = Number.parseFloat(formData.get("security_deposit") as string) || 0
 
-  if (!user_name || !check_in || !check_out || !room_id) {
-    return { error: "Name, check-in, check-out, and room are required" }
+  if (!user_name || !check_in || !room_id) {
+    return { error: "Name, check-in date, and room are required" }
   }
 
   const { data: room } = await supabase
@@ -163,13 +272,26 @@ export async function checkinGuest(prevState: unknown, formData: FormData) {
   const id = formData.get("id") as string
   const security_deposit = Number.parseFloat(formData.get("security_deposit") as string) || 0
 
+  // Auto-update check_in to today if booking was for a future date (early arrival)
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("check_in")
+    .eq("id", id)
+    .single()
+
+  const today = new Date().toISOString().split("T")[0]
+  const updates: Record<string, unknown> = {
+    checkin_status: "checked_in",
+    checkin_time: new Date().toISOString(),
+    security_deposit,
+  }
+  if (booking && booking.check_in > today) {
+    updates.check_in = today
+  }
+
   const { error } = await supabase
     .from("bookings")
-    .update({
-      checkin_status: "checked_in",
-      checkin_time: new Date().toISOString(),
-      security_deposit,
-    })
+    .update(updates)
     .eq("id", id)
 
   if (error) return { error: error.message }
@@ -288,6 +410,19 @@ export async function checkoutGuest(prevState: unknown, formData: FormData) {
     }
   }
 
+  // Get booking for checks
+  const { data: bookingInfo } = await supabase
+    .from("bookings")
+    .select("check_in, security_deposit")
+    .eq("id", id)
+    .single()
+
+  // If within 24h of check-in, room is covered by security deposit
+  const hoursSinceCheckIn = bookingInfo
+    ? (Date.now() - new Date(bookingInfo.check_in).getTime()) / (1000 * 60 * 60)
+    : 0
+  const isWithin24h = hoursSinceCheckIn <= 24
+
   const { data: bills } = await supabase
     .from("bills")
     .select("id, total, room_charge, food_charge, additional_charges, discount")
@@ -296,15 +431,26 @@ export async function checkoutGuest(prevState: unknown, formData: FormData) {
   const bill = bills?.[0]
   if (!bill) return { error: "No bill found" }
 
-  // Update room charge if overridden
-  if (roomChargeOverride) {
+  // If within 24h, zero out the room charge (deposit covers it)
+  if (isWithin24h) {
+    await supabase.from("bill_charges").delete().eq("bill_id", bill.id).eq("charge_type", "room")
+    await supabase.from("bills").update({ room_charge: 0 }).eq("id", bill.id)
+  }
+
+  // Update room charge if overridden (only when not within 24h or when admin explicitly provides a value)
+  const roomChargeNum = Number.parseFloat(roomChargeOverride)
+  if (roomChargeOverride && roomChargeNum > 0) {
+    await supabase.from("bill_charges").delete().eq("bill_id", bill.id).eq("charge_type", "room")
     await supabase.from("bill_charges").insert({
       bill_id: bill.id,
       description: "Room Charge",
-      amount: Number.parseFloat(roomChargeOverride),
+      amount: roomChargeNum,
       charge_type: "room",
     })
   }
+
+  // Clear existing extras and re-insert them (avoids duplicates from checkout form)
+  await supabase.from("bill_charges").delete().eq("bill_id", bill.id).eq("charge_type", "extra")
 
   for (let i = 0; i < extraDescriptions.length; i++) {
     const desc = extraDescriptions[i]?.trim()
@@ -319,20 +465,8 @@ export async function checkoutGuest(prevState: unknown, formData: FormData) {
     }
   }
 
-  let finalTotal = bill.total
-  if (totalInput) {
-    finalTotal = Number.parseFloat(totalInput)
-  }
-
-  if (extraDescriptions.some((d) => d?.trim()) || roomChargeOverride) {
-    await supabase.rpc("update_bill_totals", { p_bill_id: bill.id })
-    const { data: updated } = await supabase
-      .from("bills")
-      .select("total")
-      .eq("id", bill.id)
-      .single()
-    if (updated) finalTotal = updated.total
-  }
+  // Apply discount to bills.discount column
+  await supabase.from("bills").update({ discount }).eq("id", bill.id)
 
   if (discount > 0) {
     await supabase.from("bill_charges").insert({
@@ -343,7 +477,18 @@ export async function checkoutGuest(prevState: unknown, formData: FormData) {
     })
   }
 
-  const finalPaid = paid_amount_input ? Number.parseFloat(paid_amount_input) : (payment_status === "paid" ? finalTotal : 0)
+  // Always recalculate totals after all modifications
+  await supabase.rpc("update_bill_totals", { p_bill_id: bill.id })
+  const { data: updated } = await supabase
+    .from("bills")
+    .select("total")
+    .eq("id", bill.id)
+    .single()
+  const finalTotal = updated?.total ?? bill.total
+
+  const nowPaid = Number.parseFloat(paid_amount_input) || 0
+  const deposit = bookingInfo?.security_deposit || 0
+  const finalPaid = deposit + nowPaid
 
   const updates: Record<string, unknown> = {
     discount,
@@ -355,21 +500,113 @@ export async function checkoutGuest(prevState: unknown, formData: FormData) {
 
   await supabase.from("bills").update(updates).eq("id", bill.id)
 
-  // Also apply deposit to paid amount if paid
-  if (payment_status === "paid") {
-    const { data: booking } = await supabase.from("bookings").select("security_deposit").eq("id", id).single()
-    if (booking?.security_deposit) {
-      const { data: currentBill } = await supabase.from("bills").select("paid_amount").eq("id", bill.id).single()
-      if (currentBill) {
-        await supabase.from("bills").update({ paid_amount: currentBill.paid_amount + booking.security_deposit }).eq("id", bill.id)
-      }
-    }
-  }
-
   revalidatePath("/admin/checkins")
   revalidatePath("/admin/bills")
   revalidatePath("/admin/dashboard")
-  redirect(`/bill/${id}`)
+  redirect(`/admin/bill/${id}`)
+}
+
+export async function sendBillEmail(formData: FormData) {
+  const booking_id = formData.get("booking_id") as string
+  const email = formData.get("email") as string
+
+  if (!booking_id || !email) return { error: "Booking ID and email are required" }
+
+  const supabase = await createClient()
+
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("*, rooms(name)")
+    .eq("id", booking_id)
+    .single()
+
+  if (!booking) return { error: "Booking not found" }
+
+  const { data: bills } = await supabase
+    .from("bills")
+    .select("*, bill_charges(*)")
+    .eq("booking_id", booking_id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single()
+
+  if (!bills) return { error: "No bill found" }
+
+  const { data: orders } = await supabase
+    .from("orders")
+    .select("*, order_items(*, food_items(*))")
+    .eq("booking_id", booking_id)
+
+  const bill = bills
+  const dueAmount = (bill.total ?? 0) - (bill.paid_amount ?? 0)
+  const extrasHtml = (bill.bill_charges ?? [])
+    .filter((c: any) => c.charge_type === "extra")
+    .map((c: any) => `<tr><td style="padding:4px 8px">${c.description}</td><td style="padding:4px 8px;text-align:right">Rs.${c.amount.toLocaleString()}</td></tr>`)
+    .join("")
+  const orderRows = (orders ?? [])
+    .filter((o: any) => o.order_status === "approved" || o.order_status === "delivered")
+    .map((o: any) => (o.order_items ?? []).map((item: any) => `
+      <tr>
+        <td style="padding:4px 8px">${item.food_items?.name ?? "Item"} x${item.quantity}</td>
+        <td style="padding:4px 8px;text-align:right">Rs.${item.subtotal.toLocaleString()}</td>
+      </tr>`).join(""))
+    .join("")
+
+  try {
+    const billHtml = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;border:1px solid #e0d8ce;border-radius:8px">
+        <div style="text-align:center;padding-bottom:16px;border-bottom:2px solid #c8a84e">
+          <h1 style="color:#2a2218;margin:0">Hotel North Star Inn</h1>
+          <p style="color:#7a6e5e;margin:4px 0 0">Gongabu, Kathmandu, Nepal</p>
+        </div>
+        <div style="padding:16px 0">
+          <h2 style="color:#2a2218">Invoice</h2>
+          <p style="color:#5a4e3e">Bill Date: ${formatDateWithBoth(bill.bill_date ?? new Date().toISOString().split("T")[0])}</p>
+          <table style="width:100%;border-collapse:collapse;margin:12px 0">
+            <tr><td style="padding:4px 8px;background:#f5f0e8;font-weight:bold;width:120px">Guest</td><td style="padding:4px 8px">${booking.user_name}</td></tr>
+            <tr><td style="padding:4px 8px;background:#f5f0e8;font-weight:bold">Room</td><td style="padding:4px 8px">${booking.rooms?.name ?? "Room"}</td></tr>
+            <tr><td style="padding:4px 8px;background:#f5f0e8;font-weight:bold">Check In</td><td style="padding:4px 8px">${formatDateWithBoth(booking.check_in)}</td></tr>
+            ${booking.check_out ? `<tr><td style="padding:4px 8px;background:#f5f0e8;font-weight:bold">Check Out</td><td style="padding:4px 8px">${formatDateWithBoth(booking.check_out)}</td></tr>` : ""}
+          </table>
+          <table style="width:100%;border-collapse:collapse;margin:12px 0">
+            <thead><tr style="border-bottom:2px solid #e0d8ce"><th style="padding:8px;text-align:left">Item</th><th style="padding:8px;text-align:right">Amount</th></tr></thead>
+            <tbody>
+              <tr><td style="padding:4px 8px">Room Charge</td><td style="padding:4px 8px;text-align:right">Rs.${(bill.room_charge ?? 0).toLocaleString()}</td></tr>
+              ${bill.food_charge > 0 ? `<tr><td style="padding:4px 8px">Food & Beverages</td><td style="padding:4px 8px;text-align:right">Rs.${bill.food_charge.toLocaleString()}</td></tr>` : ""}
+              ${orderRows}
+              ${extrasHtml}
+              ${bill.discount > 0 ? `<tr><td style="padding:4px 8px;color:green">Discount</td><td style="padding:4px 8px;text-align:right;color:green">-Rs.${bill.discount.toLocaleString()}</td></tr>` : ""}
+            </tbody>
+            <tfoot>
+              <tr style="border-top:2px solid #2a2218;font-weight:bold"><td style="padding:8px">Total</td><td style="padding:8px;text-align:right">Rs.${(bill.total ?? 0).toLocaleString()}</td></tr>
+              <tr style="color:green"><td style="padding:4px 8px">Paid</td><td style="padding:4px 8px;text-align:right">-Rs.${(bill.paid_amount ?? 0).toLocaleString()}</td></tr>
+              ${dueAmount > 0 ? `<tr style="color:#c0392b;font-weight:bold"><td style="padding:4px 8px">Due</td><td style="padding:4px 8px;text-align:right">Rs.${dueAmount.toLocaleString()}</td></tr>` : ""}
+            </tfoot>
+          </table>
+          ${booking.security_deposit > 0 ? `<p style="font-size:13px;color:#5a4e3e">Security Deposit: Rs.${booking.security_deposit}</p>` : ""}
+        </div>
+        <div style="text-align:center;padding-top:12px;border-top:1px solid #e0d8ce;font-size:12px;color:#9a8e7e">
+          <p style="margin:0">Hotel North Star Inn &mdash; Gongabu, Kathmandu, Nepal</p>
+          <p style="margin:2px 0">Tel: 01-4356753 | Email: hotelnorthstarinn@gmail.com</p>
+          <p style="margin:4px 0">&ldquo;Atithi Devo Bhava&rdquo;</p>
+        </div>
+      </div>
+    `.trim()
+
+    await sgMail.send({
+      from: { email: ADMIN_EMAIL, name: "Hotel North Star Inn" },
+      to: [email, ADMIN_EMAIL],
+      replyTo: ADMIN_EMAIL,
+      subject: `Invoice - Hotel North Star Inn - ${booking.user_name}`,
+      html: billHtml,
+    })
+
+    return { success: true, email }
+  } catch (err) {
+    console.error("Email send failed:", err)
+    const msg = err instanceof Error ? err.message : "Unknown error"
+    return { error: `Failed to send email: ${msg}. Check SENDGRID_API_KEY in .env and verify the sender email in SendGrid dashboard.` }
+  }
 }
 
 // ========== FOOD ORDERING ==========
@@ -428,13 +665,20 @@ export async function placeOrder(prevState: unknown, formData: FormData) {
   if (itemsError) return { error: itemsError.message }
 
   try {
-    await resend.emails.send({
-      from: "Gorkhali Bisauni <orders@gorkhalibisauni.com>",
+    const { data: bookingWithRoom } = await supabase
+      .from("bookings")
+      .select("rooms(name)")
+      .eq("id", guest.booking_id)
+      .single()
+    const roomName = (bookingWithRoom as any)?.rooms?.name ?? `Room ${room_code}`
+
+    await sgMail.send({
+      from: { email: ADMIN_EMAIL, name: "Hotel North Star Inn" },
       to: [ADMIN_EMAIL],
-      subject: `New Food Order from ${guest.user_name} (Room ${room_code})`,
+      subject: `New Food Order from ${guest.user_name} (${roomName})`,
       html: `<h2>New Food Order</h2>
         <p><strong>Guest:</strong> ${guest.user_name} (${user_email})</p>
-        <p><strong>Room:</strong> ${room_code}</p>
+        <p><strong>Room:</strong> ${roomName}</p>
         <p><strong>Scheduled:</strong> ${scheduled_for || "Now"}</p>
         <p><strong>Notes:</strong> ${notes || "None"}</p>
         <p><strong>Total:</strong> Rs.${total}</p>`,
@@ -708,8 +952,23 @@ export async function updateRoom(prevState: unknown, formData: FormData) {
   return { success: true }
 }
 
+async function deleteStorageImages(supabase: ReturnType<typeof createAdminClient>, urls: string[]) {
+  const bucket = supabase.storage.from("hotel_images")
+  const paths = urls
+    .filter((u) => u?.includes("/hotel_images/"))
+    .map((u) => u.split("/hotel_images/").pop())
+    .filter(Boolean) as string[]
+  if (paths.length === 0) return
+  await bucket.remove(paths)
+}
+
 export async function deleteRoom(id: string) {
   const supabase = createAdminClient()
+  const { data: room } = await supabase.from("rooms").select("image_url, gallery").eq("id", id).single()
+  if (room) {
+    const urls = [room.image_url, ...(room.gallery ?? [])].filter(Boolean) as string[]
+    await deleteStorageImages(supabase, urls)
+  }
   const { error } = await supabase.from("rooms").delete().eq("id", id)
   if (error) return { error: error.message }
   revalidatePath("/admin/rooms")
@@ -800,6 +1059,11 @@ export async function updateFoodItem(prevState: unknown, formData: FormData) {
 
 export async function deleteFoodItem(id: string) {
   const supabase = createAdminClient()
+  const { data: item } = await supabase.from("food_menu").select("image_url, gallery").eq("id", id).single()
+  if (item) {
+    const urls = [item.image_url, ...(item.gallery ?? [])].filter(Boolean) as string[]
+    await deleteStorageImages(supabase, urls)
+  }
   const { error } = await supabase.from("food_menu").delete().eq("id", id)
   if (error) return { error: error.message }
   revalidatePath("/admin/menu")
@@ -860,13 +1124,17 @@ export async function addBillCharge(prevState: unknown, formData: FormData) {
   const bill_id = formData.get("bill_id") as string
   const description = formData.get("description") as string
   const amount = Number.parseFloat(formData.get("amount") as string)
+  const quantity = Number.parseInt(formData.get("quantity") as string) || 1
   const charge_type = (formData.get("charge_type") as string) || "extra"
 
   if (!bill_id || !description || !amount) return { error: "All fields required" }
 
+  const totalAmount = amount * quantity
+  const finalDesc = quantity > 1 ? `${description} x${quantity}` : description
+
   const { error: chargeError } = await supabase
     .from("bill_charges")
-    .insert({ bill_id, description, amount, charge_type })
+    .insert({ bill_id, description: finalDesc, amount: totalAmount, charge_type })
 
   if (chargeError) return { error: chargeError.message }
 
@@ -874,6 +1142,42 @@ export async function addBillCharge(prevState: unknown, formData: FormData) {
   if (updateError) return { error: updateError.message }
 
   revalidatePath("/admin/bills")
+  return { success: true }
+}
+
+export async function addExtraCharge(prevState: unknown, formData: FormData) {
+  const supabase = createAdminClient()
+  const booking_id = formData.get("booking_id") as string
+  const description = formData.get("description") as string
+  const amount = Number.parseFloat(formData.get("amount") as string)
+  const quantity = Number.parseInt(formData.get("quantity") as string) || 1
+
+  if (!booking_id || !description || !amount) return { error: "All fields required" }
+
+  const totalAmount = amount * quantity
+  const finalDesc = quantity > 1 ? `${description} x${quantity}` : description
+
+  const { data: bill } = await supabase
+    .from("bills")
+    .select("id")
+    .eq("booking_id", booking_id)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single()
+
+  if (!bill) return { error: "No bill found for this booking" }
+
+  const { error: chargeError } = await supabase
+    .from("bill_charges")
+    .insert({ bill_id: bill.id, description: finalDesc, amount: totalAmount, charge_type: "extra" })
+
+  if (chargeError) return { error: chargeError.message }
+
+  const { error: updateError } = await supabase.rpc("update_bill_totals", { p_bill_id: bill.id })
+  if (updateError) return { error: updateError.message }
+
+  revalidatePath("/admin/bills")
+  revalidatePath("/admin/checkins")
   return { success: true }
 }
 

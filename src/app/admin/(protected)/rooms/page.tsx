@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase-server"
 import { RoomManager } from "@/components/admin/RoomManager"
 
 export const metadata = {
-  title: "Room Management | Gorkhali Bisauni Admin",
+  title: "Room Management | Hotel North Star Inn Admin",
 }
 
 export default async function AdminRoomsPage() {

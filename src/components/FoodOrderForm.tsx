@@ -1,5 +1,7 @@
 "use client"
 
+/* eslint-disable react-hooks/set-state-in-effect */
+
 import { useState, useActionState, useEffect } from "react"
 import { placeOrder } from "@/lib/actions"
 import { Button } from "@/components/ui/button"

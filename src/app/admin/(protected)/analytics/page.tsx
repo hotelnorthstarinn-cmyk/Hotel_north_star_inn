@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase-server"
 import { AnalyticsDashboard } from "@/components/admin/AnalyticsDashboard"
 
-export const metadata = { title: "Analytics | Gorkhali Bisauni Admin" }
+export const metadata = { title: "Analytics | Hotel North Star Inn Admin" }
 
 export default async function AdminAnalyticsPage() {
   const supabase = await createClient()

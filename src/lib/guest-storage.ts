@@ -1,6 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+/* eslint-disable react-hooks/set-state-in-effect */
+
+import { useCallback, useEffect, useState } from "react"
 import type { GuestInfo } from "@/types"
 
 const STORAGE_KEY = "gorkhali_guest"
@@ -19,15 +21,15 @@ export function useGuestInfo() {
     }
   }, [])
 
-  function saveGuest(info: GuestInfo) {
+  const saveGuest = useCallback((info: GuestInfo) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(info))
     setGuest(info)
-  }
+  }, [])
 
-  function clearGuest() {
+  const clearGuest = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY)
     setGuest(null)
-  }
+  }, [])
 
   return { guest, saveGuest, clearGuest }
 }

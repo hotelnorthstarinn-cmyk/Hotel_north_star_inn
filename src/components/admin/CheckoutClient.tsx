@@ -1,16 +1,17 @@
 "use client"
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useState, useEffect, useActionState } from "react"
 import { useFormStatus } from "react-dom"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { checkoutGuest, removeOrderItem } from "@/lib/actions"
-import { ArrowLeft, Trash2, Plus } from "lucide-react"
+import { ArrowLeft, Trash2 } from "lucide-react"
 import { toast } from "sonner"
 import type { Booking, Bill, Order, Room, FoodItem } from "@/types"
 
@@ -38,16 +39,22 @@ export function CheckoutClient({
   const bill = bills?.[0]
   const room = booking.rooms
 
-  const nights = Math.max(
-    (new Date(booking.check_out).getTime() - new Date(booking.check_in).getTime()) / (1000 * 60 * 60 * 24),
-    1,
-  )
+  const nights = booking.check_out
+    ? Math.max(
+        (new Date(booking.check_out).getTime() - new Date(booking.check_in).getTime()) / (1000 * 60 * 60 * 24),
+        1,
+      )
+    : 1
+
+  const [hoursStayed] = useState(() => (Date.now() - new Date(booking.check_in).getTime()) / (1000 * 60 * 60))
+  const isWithin24h = hoursStayed <= 24
 
   const [discount, setDiscount] = useState(bill?.discount ?? 0)
-  const [paidAmount, setPaidAmount] = useState(bill?.paid_amount ?? 0)
-  const [paymentStatus, setPaymentStatus] = useState<"pending" | "partial" | "paid">(bill?.payment_status ?? "pending")
-  const [extras, setExtras] = useState<{ desc: string; amt: number }[]>([])
-  const [roomCharge, setRoomCharge] = useState(bill?.room_charge ?? (room?.price ? room.price * nights : 0))
+  const [extras, setExtras] = useState<{ desc: string; amt: number }[]>(
+    () => bill?.bill_charges?.filter((c) => c.charge_type === "extra").map((c) => ({ desc: c.description, amt: c.amount })) ?? [],
+  )
+  const defaultRoomCharge = bill?.room_charge ?? (room?.price && !isWithin24h ? room.price * nights : 0)
+  const [roomCharge, setRoomCharge] = useState(defaultRoomCharge)
   const [adjustTotal, setAdjustTotal] = useState<string>("")
 
   const [checkoutState, checkoutAction] = useActionState(checkoutGuest, null)
@@ -72,16 +79,13 @@ export function CheckoutClient({
     { label: "Other", defaultAmount: 0 },
   ]
   const finalTotal = roomCharge + foodTotal + extrasTotal - discount
+  const amountDue = finalTotal - booking.security_deposit
 
   useEffect(() => {
     if (checkoutState?.error) {
       toast.error(checkoutState.error)
     }
   }, [checkoutState])
-
-  function addExtra() {
-    setExtras((prev) => [...prev, { desc: "", amt: 0 }])
-  }
 
   function updateExtra(idx: number, field: "desc" | "amt", value: string | number) {
     setExtras((prev) => {
@@ -135,7 +139,7 @@ export function CheckoutClient({
             <div>
               <span className="text-xs font-medium text-zinc-400 uppercase">Room</span>
               <p className="mt-0.5">{room?.name} ({booking.room_code})</p>
-              <p className="text-zinc-500">{booking.check_in} → {booking.check_out} ({nights} night{nights > 1 ? "s" : ""})</p>
+              <p className="text-zinc-500">{booking.check_in} → {booking.check_out ?? "—"} ({nights} night{nights > 1 ? "s" : ""})</p>
             </div>
             <div>
               <span className="text-xs font-medium text-zinc-400 uppercase">ID & Deposit</span>
@@ -162,6 +166,9 @@ export function CheckoutClient({
                 />
               </div>
             </div>
+            {isWithin24h && roomCharge === 0 && (
+              <p className="mt-1 text-xs text-green-600">Covered by security deposit (stay within 24h)</p>
+            )}
             <p className="mt-1 text-right text-lg font-bold">Rs.{roomCharge}</p>
           </CardContent>
         </Card>
@@ -322,12 +329,12 @@ export function CheckoutClient({
                 <span>Food Charges</span>
                 <span>Rs.{foodTotal}</span>
               </div>
-              {extrasTotal > 0 && (
-                <div className="flex justify-between">
-                  <span>Extra Charges</span>
-                  <span>Rs.{extrasTotal}</span>
+              {extras.map((ex, i) => (
+                <div key={i} className="flex justify-between text-sm">
+                  <span>{ex.desc || "Extra"}</span>
+                  <span>Rs.{ex.amt}</span>
                 </div>
-              )}
+              ))}
               <div className="flex items-center justify-between border-t pt-2 dark:border-zinc-700">
                 <span>Discount</span>
                 <Input
@@ -353,33 +360,22 @@ export function CheckoutClient({
                   <span className="min-w-[6rem] text-right">Rs.{adjustTotal || finalTotal}</span>
                 </div>
               </div>
-              <div className="flex items-center justify-between border-t pt-2 dark:border-zinc-700">
-                <span>Security Deposit</span>
-                <span className="text-green-600">Rs.{booking.security_deposit}</span>
+              {booking.security_deposit > 0 && (
+                <div className="flex items-center justify-between border-t pt-2 dark:border-zinc-700">
+                  <span>Security Deposit (paid)</span>
+                  <span className="text-red-500">-Rs.{booking.security_deposit}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between border-t pt-2 text-lg font-bold dark:border-zinc-700">
+                <span>Amount Due</span>
+                <span>Rs.{Math.max(0, amountDue)}</span>
               </div>
-              <div className="flex items-center justify-between pt-2">
-                <span>Paid Amount</span>
-                <Input
-                  type="number"
-                  value={paidAmount}
-                  onChange={(e) => setPaidAmount(Number(e.target.value))}
-                  className="h-8 w-28 text-right text-sm"
-                  name="paid_amount_input"
-                />
-              </div>
-              <div className="flex items-center justify-between pt-2">
+              <div className="flex items-center justify-between border-t pt-2 text-green-600 font-medium">
                 <span>Payment Status</span>
-                <select
-                  name="payment_status"
-                  value={paymentStatus}
-                  onChange={(e) => setPaymentStatus(e.target.value as "pending" | "partial" | "paid")}
-                  className="h-8 rounded-md border border-zinc-300 bg-background px-2 text-sm dark:border-zinc-700"
-                >
-                  <option value="pending">Pending</option>
-                  <option value="partial">Partial</option>
-                  <option value="paid">Paid</option>
-                </select>
+                <span>Paid</span>
               </div>
+              <input type="hidden" name="payment_status" value="paid" />
+              <input type="hidden" name="paid_amount_input" value={adjustTotal || Math.max(0, amountDue)} />
             </div>
           </CardContent>
         </Card>

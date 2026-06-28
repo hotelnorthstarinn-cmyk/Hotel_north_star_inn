@@ -7,18 +7,64 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body class="theme-northstar">
-  <div class="theme-switcher">
-    <div class="switcher-info">
-      <span class="switcher-label">Theme</span>
-      <span class="switcher-name">North Star Signature</span>
+  <div class="theme-switcher" id="themeSwitcher">
+    <div class="switcher-header">
+      <div class="switcher-info">
+        <span class="switcher-label">Theme</span>
+        <span class="switcher-name">North Star Signature</span>
+      </div>
+      <span class="switcher-category">North Star Signature</span>
     </div>
+
+    <div class="switcher-palette" id="switcherPalette">
+      <div class="palette-item" data-var="--bg-primary">
+        <span class="palette-swatch" style="background:var(--bg-primary)"></span>
+        <span class="palette-name">Primary BG</span>
+        <span class="palette-value"></span>
+      </div>
+      <div class="palette-item" data-var="--bg-secondary">
+        <span class="palette-swatch" style="background:var(--bg-secondary)"></span>
+        <span class="palette-name">Secondary BG</span>
+        <span class="palette-value"></span>
+      </div>
+      <div class="palette-item" data-var="--text-primary">
+        <span class="palette-swatch" style="background:var(--text-primary)"></span>
+        <span class="palette-name">Primary Text</span>
+        <span class="palette-value"></span>
+      </div>
+      <div class="palette-item" data-var="--text-secondary">
+        <span class="palette-swatch" style="background:var(--text-secondary)"></span>
+        <span class="palette-name">Secondary Text</span>
+        <span class="palette-value"></span>
+      </div>
+      <div class="palette-item" data-var="--accent">
+        <span class="palette-swatch" style="background:var(--accent)"></span>
+        <span class="palette-name">Accent</span>
+        <span class="palette-value"></span>
+      </div>
+      <div class="palette-item" data-var="--accent-hover">
+        <span class="palette-swatch" style="background:var(--accent-hover)"></span>
+        <span class="palette-name">Accent Hover</span>
+        <span class="palette-value"></span>
+      </div>
+      <div class="palette-item" data-var="--border">
+        <span class="palette-swatch" style="background:var(--border)"></span>
+        <span class="palette-name">Border</span>
+        <span class="palette-value"></span>
+      </div>
+    </div>
+
+    <div class="switcher-actions">
+      <button class="copy-btn" id="copyBtn" title="Copy theme CSS variables">Copy CSS</button>
+    </div>
+
     <div class="switcher-options">
-      <button class="swatch" data-theme="theme-northstar" style="background:#c8a84e" title="North Star Signature"></button>
-      <button class="swatch" data-theme="theme-crimson" style="background:#dc2626" title="Crimson Warmth"></button>
-      <button class="swatch" data-theme="theme-neutral" style="background:#d4c9bc" title="Neutral Elegance"></button>
-      <button class="swatch" data-theme="theme-serenity" style="background:#7ab8b8" title="Serene Blues & Greens"></button>
-      <button class="swatch" data-theme="theme-earthy" style="background:#8b7d6b" title="Earthy & Botanical"></button>
-      <button class="swatch" data-theme="theme-pastel" style="background:#c4817a" title="Muted Pastels"></button>
+      <button class="swatch" data-theme="theme-northstar" style="background:#c8a84e" title="North Star Signature"><span class="swatch-key">1</span></button>
+      <button class="swatch" data-theme="theme-crimson" style="background:#dc2626" title="Crimson Warmth"><span class="swatch-key">2</span></button>
+      <button class="swatch" data-theme="theme-neutral" style="background:#d4c9bc" title="Neutral Elegance"><span class="swatch-key">3</span></button>
+      <button class="swatch" data-theme="theme-serenity" style="background:#7ab8b8" title="Serene Blues & Greens"><span class="swatch-key">4</span></button>
+      <button class="swatch" data-theme="theme-earthy" style="background:#8b7d6b" title="Earthy & Botanical"><span class="swatch-key">5</span></button>
+      <button class="swatch" data-theme="theme-pastel" style="background:#c4817a" title="Muted Pastels"><span class="swatch-key">6</span></button>
     </div>
   </div>
 

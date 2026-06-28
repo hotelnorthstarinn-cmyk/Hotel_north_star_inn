@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase-server"
 import { MyBillClient } from "@/components/MyBillClient"
 
 export const metadata = {
-  title: "My Bill | Gorkhali Bisauni Lodge And Hotel",
+  title: "My Bill | Hotel North Star Inn",
 }
 
 export default async function MyBillPage() {
