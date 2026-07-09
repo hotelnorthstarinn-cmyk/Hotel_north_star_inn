@@ -5,7 +5,7 @@
 import { useCallback, useEffect, useState } from "react"
 import type { GuestInfo } from "@/types"
 
-const STORAGE_KEY = "gorkhali_guest"
+const STORAGE_KEY = "northstar_guest"
 
 export function useGuestInfo() {
   const [guest, setGuest] = useState<GuestInfo | null>(null)

@@ -5,19 +5,19 @@ import { BsGlobe2 } from "react-icons/bs"
 
 const socialLinks = [
   {
-    href: "https://facebook.com/gorkhalibisauni",
+    href: "https://facebook.com/hotelnorthstarinn",
     icon: FaFacebookF,
     label: "Facebook",
     hoverColor: "hover:bg-[#1877F2] hover:border-[#1877F2]",
   },
   {
-    href: "https://instagram.com/gorkhalibisauni",
+    href: "https://instagram.com/hotelnorthstarinn",
     icon: FaInstagram,
     label: "Instagram",
     hoverColor: "hover:bg-[#E4405F] hover:border-[#E4405F]",
   },
   {
-    href: "https://tiktok.com/@gorkhalibisauni",
+    href: "https://tiktok.com/@hotelnorthstarinn",
     icon: FaTiktok,
     label: "TikTok",
     hoverColor: "hover:bg-[#000000] hover:border-[#000000]",

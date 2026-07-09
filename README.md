@@ -1,6 +1,6 @@
-# 🏨 Gorkhali Bisauni Lodge And Hotel
+# 🏨 Hotel North Star Inn
 
-A full-stack hotel management web application for **Gorkhali Bisauni Lodge And Hotel** located in Gongabu, Kathmandu, Nepal. Built with Next.js and Supabase, this system serves as both a **public-facing hotel website** and a **comprehensive admin back-office** for managing bookings, food ordering, billing, check-in/check-out operations, and analytics.
+A full-stack hotel management web application for **Hotel North Star Inn** located in Gongabu, Kathmandu, Nepal. Built with Next.js and Supabase, this system serves as both a **public-facing hotel website** and a **comprehensive admin back-office** for managing bookings, food ordering, billing, check-in/check-out operations, and analytics.
 
 ## 🚀 Features
 
@@ -139,8 +139,8 @@ src/
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/gorkhali-bisauni-hotel.git
-cd gorkhali-bisauni-hotel
+git clone https://github.com/Aagaman1229/Gorkhali_Bisauni_Lodge_And_Hotel.git
+cd hotel_north_star_inn
 
 # Install dependencies
 npm install
