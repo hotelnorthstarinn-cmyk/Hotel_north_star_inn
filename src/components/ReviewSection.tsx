@@ -19,12 +19,16 @@ export function ReviewSection({ reviews }: { reviews: Review[] }) {
         <p className="text-center text-zinc-500">No reviews yet. Be the first!</p>
       ) : (
         <div
-          className="scrollbar-hide flex gap-6 overflow-x-auto pb-2"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          className="scrollbar-hide flex gap-6 overflow-x-auto pb-2 pr-8 snap-x"
+          style={{
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+            WebkitOverflowScrolling: "touch",
+          }}
         >
           <style>{`.scrollbar-hide::-webkit-scrollbar { display: none; }`}</style>
           {reviews.map((review) => (
-            <Card key={review.id} className="flex w-72 shrink-0 flex-col sm:w-80">
+            <Card key={review.id} className="flex w-72 shrink-0 flex-col sm:w-80 snap-start">
               <CardContent className="flex-1 p-5">
                 <div className="mb-2 flex gap-0.5">
                   {[1, 2, 3, 4, 5].map((s) => (
