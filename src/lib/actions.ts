@@ -2,15 +2,19 @@
 
 import { createClient } from "@/lib/supabase-server"
 import { createAdminClient } from "@/lib/supabase-admin"
-import sgMail from "@sendgrid/mail"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { formatDateWithBoth } from "@/lib/nepali-date"
 
 const ADMIN_EMAIL = "hotelnorthstarinn@gmail.com"
 
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+async function getMailClient() {
+  const mod = await import("@sendgrid/mail")
+  const sgMail = mod.default || mod
+  if (process.env.SENDGRID_API_KEY) {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+  }
+  return sgMail
 }
 
 
@@ -69,7 +73,7 @@ export async function createBooking(prevState: unknown, formData: FormData) {
 
   try {
     await Promise.race([
-      sgMail.send({
+      (await getMailClient()).send({
         from: { email: ADMIN_EMAIL, name: "Hotel North Star Inn" },
         to: [user_email, ADMIN_EMAIL],
         subject: "Booking Confirmed - Hotel North Star Inn",
@@ -132,214 +136,226 @@ export async function createBooking(prevState: unknown, formData: FormData) {
 }
 
 export async function cancelBooking(prevState: unknown, formData: FormData) {
-  const supabase = createAdminClient()
-  const id = formData.get("id") as string
-
-  const { data: booking } = await supabase
-    .from("bookings")
-    .select("user_name, user_email, user_phone, room_code, check_in, check_out, source, room_id")
-    .eq("id", id)
-    .single()
-
-  if (!booking) return { error: "Booking not found" }
-  if (booking.source !== "online") return { error: "Only online bookings can be cancelled" }
-
-  const { data: room } = await supabase
-    .from("rooms")
-    .select("name")
-    .eq("id", booking.room_id)
-    .single()
-  const roomName = room?.name ?? "Room"
-
-  const { error } = await supabase
-    .from("bookings")
-    .update({ status: "cancelled" })
-    .eq("id", id)
-
-  if (error) return { error: error.message }
-
   try {
-    await Promise.race([
-      sgMail.send({
-        from: { email: ADMIN_EMAIL, name: "Hotel North Star Inn" },
-        to: [booking.user_email, ADMIN_EMAIL],
-        subject: "Booking Cancelled - Hotel North Star Inn",
-        html: `
-          <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;border:1px solid #e0d8ce;border-radius:8px">
-            <div style="text-align:center;padding-bottom:16px;border-bottom:2px solid #c8a84e">
-              <h1 style="color:#2a2218;margin:0">Hotel North Star Inn</h1>
-              <p style="color:#7a6e5e;margin:4px 0 0">Gongabu, Kathmandu, Nepal</p>
-            </div>
-            <div style="padding:16px 0">
-              <h2 style="color:#2a2218;">Booking Cancelled</h2>
-              <p>Dear ${booking.user_name},</p>
-              <p>Your booking at <strong>Hotel North Star Inn</strong> has been cancelled as requested.</p>
-              <table style="width:100%;border-collapse:collapse;margin:12px 0">
-                <tr><td style="padding:6px 12px;background:#f5f0e8;font-weight:bold;width:120px">Room</td><td style="padding:6px 12px">${roomName}</td></tr>
-                <tr><td style="padding:6px 12px;background:#f5f0e8;font-weight:bold">Check-in</td><td style="padding:6px 12px">${formatDateWithBoth(booking.check_in)}</td></tr>
-                ${booking.check_out ? `<tr><td style="padding:6px 12px;background:#f5f0e8;font-weight:bold">Check-out</td><td style="padding:6px 12px">${formatDateWithBoth(booking.check_out)}</td></tr>` : ""}
-              </table>
-              <p style="font-size:14px;color:#5a4e3e;">We hope to welcome you in the future.</p>
-            </div>
-            <div style="text-align:center;padding-top:12px;border-top:1px solid #e0d8ce;font-size:12px;color:#9a8e7e">
-              <p style="margin:0">Hotel North Star Inn &mdash; Gongabu, Kathmandu, Nepal</p>
-              <p style="margin:2px 0">Tel: 01-4356753 | Email: hotelnorthstarinn@gmail.com</p>
-            </div>
-          </div>
-        `,
-      }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error("Email timeout")), 5000)),
-    ])
-  } catch { /* non-blocking */ }
+    const supabase = createAdminClient()
+    const id = formData.get("id") as string
 
-  revalidatePath("/admin/checkins")
-  revalidatePath("/admin/dashboard")
-  return { success: true }
+    const { data: booking } = await supabase
+      .from("bookings")
+      .select("user_name, user_email, user_phone, room_code, check_in, check_out, source, room_id")
+      .eq("id", id)
+      .single()
+
+    if (!booking) return { error: "Booking not found" }
+    if (booking.source !== "online") return { error: "Only online bookings can be cancelled" }
+
+    const { data: room } = await supabase
+      .from("rooms")
+      .select("name")
+      .eq("id", booking.room_id)
+      .single()
+    const roomName = room?.name ?? "Room"
+
+    const { error } = await supabase
+      .from("bookings")
+      .update({ status: "cancelled" })
+      .eq("id", id)
+
+    if (error) return { error: error.message }
+
+    try {
+      await Promise.race([
+        (await getMailClient()).send({
+          from: { email: ADMIN_EMAIL, name: "Hotel North Star Inn" },
+          to: [booking.user_email, ADMIN_EMAIL],
+          subject: "Booking Cancelled - Hotel North Star Inn",
+          html: `
+            <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;border:1px solid #e0d8ce;border-radius:8px">
+              <div style="text-align:center;padding-bottom:16px;border-bottom:2px solid #c8a84e">
+                <h1 style="color:#2a2218;margin:0">Hotel North Star Inn</h1>
+                <p style="color:#7a6e5e;margin:4px 0 0">Gongabu, Kathmandu, Nepal</p>
+              </div>
+              <div style="padding:16px 0">
+                <h2 style="color:#2a2218;">Booking Cancelled</h2>
+                <p>Dear ${booking.user_name},</p>
+                <p>Your booking at <strong>Hotel North Star Inn</strong> has been cancelled as requested.</p>
+                <table style="width:100%;border-collapse:collapse;margin:12px 0">
+                  <tr><td style="padding:6px 12px;background:#f5f0e8;font-weight:bold;width:120px">Room</td><td style="padding:6px 12px">${roomName}</td></tr>
+                  <tr><td style="padding:6px 12px;background:#f5f0e8;font-weight:bold">Check-in</td><td style="padding:6px 12px">${formatDateWithBoth(booking.check_in)}</td></tr>
+                  ${booking.check_out ? `<tr><td style="padding:6px 12px;background:#f5f0e8;font-weight:bold">Check-out</td><td style="padding:6px 12px">${formatDateWithBoth(booking.check_out)}</td></tr>` : ""}
+                </table>
+                <p style="font-size:14px;color:#5a4e3e;">We hope to welcome you in the future.</p>
+              </div>
+              <div style="text-align:center;padding-top:12px;border-top:1px solid #e0d8ce;font-size:12px;color:#9a8e7e">
+                <p style="margin:0">Hotel North Star Inn &mdash; Gongabu, Kathmandu, Nepal</p>
+                <p style="margin:2px 0">Tel: 01-4356753 | Email: hotelnorthstarinn@gmail.com</p>
+              </div>
+            </div>
+          `,
+        }),
+        new Promise((_, reject) => setTimeout(() => reject(new Error("Email timeout")), 5000)),
+      ])
+    } catch { /* non-blocking */ }
+
+    revalidatePath("/admin/checkins")
+    revalidatePath("/admin/dashboard")
+    return { success: true }
+  } catch (err) {
+    console.error("cancelBooking error:", err)
+    return { error: err instanceof Error ? err.message : "Unknown error during cancellation" }
+  }
 }
 
 export async function adminCreateBooking(prevState: unknown, formData: FormData) {
-  const supabase = createAdminClient()
+  try {
+    const supabase = createAdminClient()
 
-  const user_name = formData.get("user_name") as string
-  const user_email = formData.get("user_email") as string
-  const user_phone = formData.get("user_phone") as string
-  const address = formData.get("address") as string
-  const id_proof_type = formData.get("id_proof_type") as string
-  const id_proof_number = formData.get("id_proof_number") as string
-  const check_in = formData.get("check_in") as string
-  const check_out = (formData.get("check_out") as string) || null
-  const room_id = formData.get("room_id") as string
-  const security_deposit = Number.parseFloat(formData.get("security_deposit") as string) || 0
+    const user_name = formData.get("user_name") as string
+    const user_email = formData.get("user_email") as string
+    const user_phone = formData.get("user_phone") as string
+    const address = formData.get("address") as string
+    const id_proof_type = formData.get("id_proof_type") as string
+    const id_proof_number = formData.get("id_proof_number") as string
+    const check_in = formData.get("check_in") as string
+    const check_out = (formData.get("check_out") as string) || null
+    const room_id = formData.get("room_id") as string
+    const security_deposit = Number.parseFloat(formData.get("security_deposit") as string) || 0
 
-  if (!user_name || !check_in || !room_id) {
-    return { error: "Name, check-in date, and room are required" }
-  }
-
-  const { data: room } = await supabase
-    .from("rooms")
-    .select("room_code, price")
-    .eq("id", room_id)
-    .single()
-
-  if (!room) return { error: "Room not found" }
-
-  const { data: booking, error } = await supabase
-    .from("bookings")
-    .insert({
-      user_name, user_email, user_phone, address,
-      id_proof_type: id_proof_type || "", id_proof_number: id_proof_number || "",
-      check_in, check_out, room_id, room_code: room.room_code,
-      status: "confirmed", source: "offline",
-      checkin_status: "checked_in", checkin_time: new Date().toISOString(),
-      security_deposit,
-    })
-    .select()
-    .single()
-
-  if (error) return { error: error.message }
-
-  // If security deposit was taken, record on bill
-  if (security_deposit > 0) {
-    let { data: bill } = await supabase
-      .from("bills")
-      .select("id")
-      .eq("booking_id", booking.id)
-      .maybeSingle()
-
-    if (!bill) {
-      const { data: newBill } = await supabase
-        .from("bills")
-        .insert({
-          booking_id: booking.id,
-          user_name,
-          user_email: user_email || "",
-          user_phone: user_phone || "",
-          room_code: room.room_code,
-          payment_status: "pending",
-        })
-        .select("id")
-        .single()
-      bill = newBill
+    if (!user_name || !check_in || !room_id) {
+      return { error: "Name, check-in date, and room are required" }
     }
 
-    if (bill) {
-      await supabase.from("bill_charges").insert({
-        bill_id: bill.id,
-        description: "Security Deposit",
-        amount: security_deposit,
-        charge_type: "deposit",
+    const { data: room } = await supabase
+      .from("rooms")
+      .select("room_code, price")
+      .eq("id", room_id)
+      .single()
+
+    if (!room) return { error: "Room not found" }
+
+    const { data: booking, error } = await supabase
+      .from("bookings")
+      .insert({
+        user_name, user_email, user_phone, address,
+        id_proof_type: id_proof_type || "", id_proof_number: id_proof_number || "",
+        check_in, check_out, room_id, room_code: room.room_code,
+        status: "confirmed", source: "offline",
+        checkin_status: "checked_in", checkin_time: new Date().toISOString(),
+        security_deposit,
       })
-      await supabase
-        .from("bills")
-        .update({ paid_amount: security_deposit, payment_status: "partial" })
-        .eq("id", bill.id)
-    }
-  }
+      .select()
+      .single()
 
-  revalidatePath("/admin/checkins")
-  revalidatePath("/admin/dashboard")
-  return { success: true }
+    if (error) return { error: error.message }
+
+    if (security_deposit > 0) {
+      let { data: bill } = await supabase
+        .from("bills")
+        .select("id")
+        .eq("booking_id", booking.id)
+        .maybeSingle()
+
+      if (!bill) {
+        const { data: newBill } = await supabase
+          .from("bills")
+          .insert({
+            booking_id: booking.id,
+            user_name,
+            user_email: user_email || "",
+            user_phone: user_phone || "",
+            room_code: room.room_code,
+            payment_status: "pending",
+          })
+          .select("id")
+          .single()
+        bill = newBill
+      }
+
+      if (bill) {
+        await supabase.from("bill_charges").insert({
+          bill_id: bill.id,
+          description: "Security Deposit",
+          amount: security_deposit,
+          charge_type: "deposit",
+        })
+        await supabase
+          .from("bills")
+          .update({ paid_amount: security_deposit, payment_status: "partial" })
+          .eq("id", bill.id)
+      }
+    }
+
+    revalidatePath("/admin/checkins")
+    revalidatePath("/admin/dashboard")
+    return { success: true }
+  } catch (err) {
+    console.error("adminCreateBooking error:", err)
+    return { error: err instanceof Error ? err.message : "Unknown error creating booking" }
+  }
 }
 
 // ========== CHECK-IN / CHECK-OUT ==========
 
 export async function checkinGuest(prevState: unknown, formData: FormData) {
-  const supabase = createAdminClient()
-  const id = formData.get("id") as string
-  const security_deposit = Number.parseFloat(formData.get("security_deposit") as string) || 0
+  try {
+    const supabase = createAdminClient()
+    const id = formData.get("id") as string
+    const security_deposit = Number.parseFloat(formData.get("security_deposit") as string) || 0
 
-  // Auto-update check_in to today if booking was for a future date (early arrival)
-  const { data: booking } = await supabase
-    .from("bookings")
-    .select("check_in")
-    .eq("id", id)
-    .single()
-
-  const today = new Date().toISOString().split("T")[0]
-  const updates: Record<string, unknown> = {
-    checkin_status: "checked_in",
-    checkin_time: new Date().toISOString(),
-    security_deposit,
-  }
-  if (booking && booking.check_in > today) {
-    updates.check_in = today
-  }
-
-  const { error } = await supabase
-    .from("bookings")
-    .update(updates)
-    .eq("id", id)
-
-  if (error) return { error: error.message }
-
-  // Record deposit in bill
-  if (security_deposit > 0) {
-    const { data: bill } = await supabase
-      .from("bills")
-      .select("id, paid_amount")
-      .eq("booking_id", id)
+    const { data: booking } = await supabase
+      .from("bookings")
+      .select("check_in")
+      .eq("id", id)
       .single()
 
-    if (bill) {
-      await supabase.from("bill_charges").insert({
-        bill_id: bill.id,
-        description: "Security Deposit",
-        amount: security_deposit,
-        charge_type: "deposit",
-      })
-      await supabase
-        .from("bills")
-        .update({
-          paid_amount: (bill.paid_amount || 0) + security_deposit,
-          payment_status: "partial",
-        })
-        .eq("id", bill.id)
+    const today = new Date().toISOString().split("T")[0]
+    const updates: Record<string, unknown> = {
+      checkin_status: "checked_in",
+      checkin_time: new Date().toISOString(),
+      security_deposit,
     }
-  }
+    if (booking && booking.check_in > today) {
+      updates.check_in = today
+    }
 
-  revalidatePath("/admin/checkins")
-  revalidatePath("/admin/dashboard")
-  return { success: true }
+    const { error } = await supabase
+      .from("bookings")
+      .update(updates)
+      .eq("id", id)
+
+    if (error) return { error: error.message }
+
+    if (security_deposit > 0) {
+      const { data: bill } = await supabase
+        .from("bills")
+        .select("id, paid_amount")
+        .eq("booking_id", id)
+        .single()
+
+      if (bill) {
+        await supabase.from("bill_charges").insert({
+          bill_id: bill.id,
+          description: "Security Deposit",
+          amount: security_deposit,
+          charge_type: "deposit",
+        })
+        await supabase
+          .from("bills")
+          .update({
+            paid_amount: (bill.paid_amount || 0) + security_deposit,
+            payment_status: "partial",
+          })
+          .eq("id", bill.id)
+      }
+    }
+
+    revalidatePath("/admin/checkins")
+    revalidatePath("/admin/dashboard")
+    return { success: true }
+  } catch (err) {
+    console.error("checkinGuest error:", err)
+    return { error: err instanceof Error ? err.message : "Unknown error during check-in" }
+  }
 }
 
 export async function checkoutGuest(prevState: unknown, formData: FormData) {
@@ -602,7 +618,7 @@ export async function sendBillEmail(formData: FormData) {
       </div>
     `.trim()
 
-    await sgMail.send({
+    await (await getMailClient()).send({
       from: { email: ADMIN_EMAIL, name: "Hotel North Star Inn" },
       to: [email, ADMIN_EMAIL],
       replyTo: ADMIN_EMAIL,
@@ -681,7 +697,7 @@ export async function placeOrder(prevState: unknown, formData: FormData) {
       .single()
     const roomName = (bookingWithRoom as any)?.rooms?.name ?? `Room ${room_code}`
 
-    await sgMail.send({
+    await (await getMailClient()).send({
       from: { email: ADMIN_EMAIL, name: "Hotel North Star Inn" },
       to: [ADMIN_EMAIL],
       subject: `New Food Order from ${guest.user_name} (${roomName})`,
