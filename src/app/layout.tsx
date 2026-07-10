@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Geist, Geist_Mono } from "next/font/google"
+import Script from "next/script"
 import { Providers } from "@/app/providers"
 import { NavbarWrapper } from "@/components/NavbarWrapper"
 import { Footer } from "@/components/Footer"
@@ -39,10 +40,14 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: `if(typeof __name==="undefined"){__name=function(t,v){return Object.defineProperty(t,"name",{value:v,configurable:true}),t}}` }} />
-      </head>
       <body className="min-h-screen flex flex-col bg-background font-sans text-foreground antialiased">
+        <Script
+          id="polyfill-name"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `if(typeof __name==="undefined"){__name=function(t,v){return Object.defineProperty(t,"name",{value:v,configurable:true}),t}}`,
+          }}
+        />
         <Providers>
           <NavbarWrapper />
           <main className="flex-1">{children}</main>
