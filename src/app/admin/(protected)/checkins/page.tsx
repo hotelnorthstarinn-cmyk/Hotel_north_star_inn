@@ -21,7 +21,7 @@ export default async function AdminCheckinsPage() {
     supabase
       .from("rooms")
       .select("*")
-      .in("status", ["available", "maintenance"])
+      .eq("status", "available")
       .order("name"),
   ])
 

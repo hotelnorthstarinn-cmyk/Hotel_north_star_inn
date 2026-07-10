@@ -82,9 +82,9 @@ export function CheckinManager({
   }, [chargeState, router])
 
   useEffect(() => {
-    if (checkinState?.success) { toast.success("Guest checked in!"); handleCloseCheckin() }
+    if (checkinState?.success) { toast.success("Guest checked in!"); handleCloseCheckin(); router.refresh() }
     else if (checkinState?.error) toast.error(checkinState.error)
-  }, [checkinState])
+  }, [checkinState, router])
 
   useEffect(() => {
     if (cancelState?.success) { toast.success("Booking cancelled!"); router.refresh() }

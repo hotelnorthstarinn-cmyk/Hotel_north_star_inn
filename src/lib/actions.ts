@@ -240,11 +240,27 @@ export async function adminCreateBooking(prevState: unknown, formData: FormData)
 
   // If security deposit was taken, record on bill
   if (security_deposit > 0) {
-    const { data: bill } = await supabase
+    let { data: bill } = await supabase
       .from("bills")
       .select("id")
       .eq("booking_id", booking.id)
-      .single()
+      .maybeSingle()
+
+    if (!bill) {
+      const { data: newBill } = await supabase
+        .from("bills")
+        .insert({
+          booking_id: booking.id,
+          user_name,
+          user_email: user_email || "",
+          user_phone: user_phone || "",
+          room_code: room.room_code,
+          payment_status: "pending",
+        })
+        .select("id")
+        .single()
+      bill = newBill
+    }
 
     if (bill) {
       await supabase.from("bill_charges").insert({
@@ -425,7 +441,7 @@ export async function checkoutGuest(prevState: unknown, formData: FormData) {
 
   const { data: bills } = await supabase
     .from("bills")
-    .select("id, total, room_charge, food_charge, additional_charges, discount")
+    .select("id, total, room_charge, food_charge, additional_charges, discount, paid_amount")
     .eq("booking_id", id)
 
   const bill = bills?.[0]
@@ -472,23 +488,16 @@ export async function checkoutGuest(prevState: unknown, formData: FormData) {
     await supabase.from("bill_charges").insert({
       bill_id: bill.id,
       description: "Discount",
-      amount: discount,
+      amount: -discount,
       charge_type: "discount",
     })
   }
 
   // Always recalculate totals after all modifications
   await supabase.rpc("update_bill_totals", { p_bill_id: bill.id })
-  const { data: updated } = await supabase
-    .from("bills")
-    .select("total")
-    .eq("id", bill.id)
-    .single()
-  const finalTotal = updated?.total ?? bill.total
 
   const nowPaid = Number.parseFloat(paid_amount_input) || 0
-  const deposit = bookingInfo?.security_deposit || 0
-  const finalPaid = deposit + nowPaid
+  const finalPaid = (bill.paid_amount || 0) + nowPaid
 
   const updates: Record<string, unknown> = {
     discount,
@@ -496,7 +505,7 @@ export async function checkoutGuest(prevState: unknown, formData: FormData) {
     paid_amount: finalPaid,
   }
 
-  if (totalInput) updates.total = finalTotal
+  if (totalInput) updates.total = Number.parseFloat(totalInput)
 
   await supabase.from("bills").update(updates).eq("id", bill.id)
 
@@ -696,18 +705,20 @@ export async function updateOrderStatus(prevState: unknown, formData: FormData) 
   const id = formData.get("id") as string
   const status = formData.get("order_status") as string
 
+  // Read previous status before updating
+  const { data: order } = await supabase
+    .from("orders")
+    .select("order_status")
+    .eq("id", id)
+    .single()
+  const wasApproved = order?.order_status === "approved"
+
   const { error } = await supabase.from("orders").update({ order_status: status }).eq("id", id)
   if (error) return { error: error.message }
 
-  // Charge bill on approval, remove on rejection/cancellation
   if (status === "approved") {
     await supabase.rpc("add_order_to_bill", { p_order_id: id })
-  } else if (status === "rejected" || status === "cancelled") {
-    const { data: order } = await supabase.from("orders").select("order_status").eq("id", id).single()
-    // Only remove from bill if it was previously approved
-    if (order && order.order_status !== "approved") {
-      // already approved → remove
-    }
+  } else if ((status === "rejected" || status === "cancelled") && wasApproved) {
     await supabase.rpc("remove_order_from_bill", { p_order_id: id })
   }
 
