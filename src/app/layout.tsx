@@ -39,6 +39,9 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable}`}
     >
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `if(typeof __name==="undefined"){__name=function(t,v){return Object.defineProperty(t,"name",{value:v,configurable:true}),t}}` }} />
+      </head>
       <body className="min-h-screen flex flex-col bg-background font-sans text-foreground antialiased">
         <Providers>
           <NavbarWrapper />
