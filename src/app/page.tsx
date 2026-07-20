@@ -34,7 +34,7 @@ export default async function HomePage() {
             </p>
           </div>
           <a
-            href="https://maps.app.goo.gl/64ZriVAyVFSZyZVR8"
+            href="https://maps.app.goo.gl/TV85XzECmg68whcw9"
             target="_blank"
             rel="noopener noreferrer"
             className="group relative block overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 shadow-sm transition-shadow hover:shadow-md dark:border-zinc-800 dark:bg-zinc-800"

@@ -115,7 +115,7 @@ export async function createBooking(prevState: unknown, formData: FormData) {
               <h3 style="color: #2a2218;">Hotel North Star Inn</h3>
               <p style="font-size: 14px; color: #5a4e3e; margin: 4px 0;">
                 Gongabu, Kathmandu, Nepal<br/>
-                Tel: 01-4356753<br/>
+                Tel: 984-3035922 / 01-4356753<br/>
                 Email: hotelnorthstarinn@gmail.com
               </p>
             </div>
@@ -188,7 +188,7 @@ export async function cancelBooking(prevState: unknown, formData: FormData) {
               </div>
               <div style="text-align:center;padding-top:12px;border-top:1px solid #e0d8ce;font-size:12px;color:#9a8e7e">
                 <p style="margin:0">Hotel North Star Inn &mdash; Gongabu, Kathmandu, Nepal</p>
-                <p style="margin:2px 0">Tel: 01-4356753 | Email: hotelnorthstarinn@gmail.com</p>
+                <p style="margin:2px 0">Tel: 984-3035922 / 01-4356753 | Email: hotelnorthstarinn@gmail.com</p>
               </div>
             </div>
           `,
@@ -612,7 +612,7 @@ export async function sendBillEmail(formData: FormData) {
         </div>
         <div style="text-align:center;padding-top:12px;border-top:1px solid #e0d8ce;font-size:12px;color:#9a8e7e">
           <p style="margin:0">Hotel North Star Inn &mdash; Gongabu, Kathmandu, Nepal</p>
-          <p style="margin:2px 0">Tel: 01-4356753 | Email: hotelnorthstarinn@gmail.com</p>
+          <p style="margin:2px 0">Tel: 984-3035922 / 01-4356753 | Email: hotelnorthstarinn@gmail.com</p>
           <p style="margin:4px 0">&ldquo;Atithi Devo Bhava&rdquo;</p>
         </div>
       </div>

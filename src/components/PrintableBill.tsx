@@ -143,7 +143,7 @@ export function PrintableBill({
           <div className="border-b px-4 py-2 text-center print:pb-1.5 print:pt-0">
             <Image src="/images/logo.png" alt="" width={100} height={30} className="mx-auto h-10 w-auto" />
             <h1 className="text-sm font-bold text-zinc-900">Hotel North Star Inn</h1>
-            <p className="text-[9px] text-zinc-500 dark:text-zinc-600">Gongabu, Kathmandu, Nepal | Tel: 01-4356753</p>
+            <p className="text-[9px] text-zinc-500 dark:text-zinc-600">Gongabu, Kathmandu, Nepal | Tel: 984-3035922 / 01-4356753</p>
           </div>
 
           {/* Guest info + dates */}

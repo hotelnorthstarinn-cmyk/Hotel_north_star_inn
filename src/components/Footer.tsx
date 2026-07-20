@@ -50,7 +50,13 @@ export function Footer() {
                 <span>Gongabu, Kathmandu, Nepal</span>
               </li>
               <li>
-                <a href="tel:+977014956753" className="flex items-center gap-2 transition-colors hover:text-deep-blue dark:hover:text-deep-blue-light">
+                <a href="tel:+9779843035922" className="flex items-center gap-2 transition-colors hover:text-deep-blue dark:hover:text-deep-blue-light">
+                  <Phone className="h-4 w-4 shrink-0 text-crimson" />
+                  984-3035922
+                </a>
+              </li>
+              <li>
+                <a href="tel:+977014356753" className="flex items-center gap-2 transition-colors hover:text-deep-blue dark:hover:text-deep-blue-light">
                   <Phone className="h-4 w-4 shrink-0 text-crimson" />
                   01-4356753
                 </a>
@@ -75,8 +81,11 @@ export function Footer() {
               <Link href="/order-food" className="text-zinc-600 transition-colors hover:text-deep-blue dark:text-zinc-400 dark:hover:text-deep-blue-light">Order Food</Link>
               <Link href="/my-bill" className="text-zinc-600 transition-colors hover:text-deep-blue dark:text-zinc-400 dark:hover:text-deep-blue-light">My Bill &amp; Dues</Link>
               <Link href="/#booking" className="text-zinc-600 transition-colors hover:text-deep-blue dark:text-zinc-400 dark:hover:text-deep-blue-light">Book a Room</Link>
+              <a href="tel:+9779843035922" className="flex items-center gap-1 text-zinc-600 transition-colors hover:text-deep-blue dark:text-zinc-400 dark:hover:text-deep-blue-light">
+                <Phone className="h-3.5 w-3.5" /> 984-3035922
+              </a>
               <a href="tel:+977014356753" className="flex items-center gap-1 text-zinc-600 transition-colors hover:text-deep-blue dark:text-zinc-400 dark:hover:text-deep-blue-light">
-                <Phone className="h-3.5 w-3.5" /> Click to Call
+                <Phone className="h-3.5 w-3.5" /> 01-4356753
               </a>
               <a href="mailto:hotelnorthstarinn@gmail.com" className="flex items-center gap-1 text-zinc-600 transition-colors hover:text-deep-blue dark:text-zinc-400 dark:hover:text-deep-blue-light">
                 <Mail className="h-3.5 w-3.5" /> Send Email
