@@ -92,13 +92,13 @@ export function PrintableBill({
           </Link>
           <div className="flex items-center gap-2">
             {!booking.user_email && !sent && (
-              <div className="flex items-center gap-1">
+              <div className="flex flex-wrap items-center gap-1">
                 <Input
                   type="email"
                   placeholder="Guest email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-8 w-44 text-sm"
+                  className="h-8 w-36 text-sm sm:w-44"
                 />
                 <Button onClick={handleSend} size="sm" disabled={sending}>
                   <Mail className="mr-1 h-3 w-3" /> {sending ? "Sending..." : "Send"}
@@ -120,13 +120,13 @@ export function PrintableBill({
         {!booking.user_email && !sent && (
           <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-700 dark:bg-amber-900/30">
             <p className="mb-2 font-medium text-amber-800 dark:text-amber-300">No email on file</p>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Input
                 type="email"
                 placeholder="Enter guest email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="h-9 text-sm"
+                className="h-9 min-w-0 flex-1 text-sm"
               />
               <Button onClick={handleSend} size="sm" disabled={sending}>
                 {sending ? "Sending..." : "Send Bill"}

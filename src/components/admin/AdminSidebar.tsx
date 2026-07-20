@@ -12,7 +12,7 @@ const sidebarLinks = [
   { href: "/admin/bills", label: "Bills & Dues", icon: DollarSign },
 ]
 
-export function AdminSidebar() {
+export function AdminSidebar({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname()
 
   return (
@@ -28,6 +28,7 @@ export function AdminSidebar() {
           <Link
             key={link.href}
             href={link.href}
+            onClick={onClose}
             className={cn(
               "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
               pathname === link.href || (link.href === "/admin/dashboard" && pathname === "/admin")

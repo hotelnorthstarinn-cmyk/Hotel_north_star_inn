@@ -140,7 +140,7 @@ export function MenuManager({ initialItems }: { initialItems: FoodItem[] }) {
                 <Label htmlFor="description">Description</Label>
                 <Input id="description" name="description" defaultValue={editingItem?.description ?? ""} />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label htmlFor="price">Price (Rs.)</Label>
                   <Input id="price" name="price" type="number" step="0.01" defaultValue={editingItem?.price ?? ""} required />

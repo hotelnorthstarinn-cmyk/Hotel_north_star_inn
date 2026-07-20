@@ -49,7 +49,7 @@ export function AnalyticsDashboard({
         <h2 className="text-2xl font-bold">Analytics</h2>
         <div className="flex gap-2">
           {expenseOpen ? (
-            <form action={expenseAction} className="flex items-end gap-2">
+            <form action={expenseAction} className="flex flex-wrap items-end gap-2">
               <div>
                 <Label className="text-xs">Description</Label>
                 <Input name="description" size={15} required />

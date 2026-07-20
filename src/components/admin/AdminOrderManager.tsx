@@ -164,7 +164,7 @@ function OrderCard({ order }: { order: Order & { order_items?: (OrderItem & { fo
               </form>
             </div>
           )}
-          <form action={statusAction} className="flex items-center gap-2">
+          <form action={statusAction} className="flex flex-wrap items-center gap-2">
             <input type="hidden" name="id" value={order.id} />
             <select
               name="order_status"

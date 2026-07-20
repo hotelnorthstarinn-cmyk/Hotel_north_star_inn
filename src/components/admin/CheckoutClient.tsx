@@ -268,7 +268,7 @@ export function CheckoutClient({
           <CardHeader>
             <CardTitle className="flex items-center justify-between text-base">
               <span>Extra Charges</span>
-              <div className="flex gap-1">
+              <div className="flex flex-wrap gap-1">
                 {EXTRA_CHARGE_TYPES.map((type) => (
                   <Button key={type.label} type="button" variant="outline" size="sm" className="text-xs"
                     onClick={() => {

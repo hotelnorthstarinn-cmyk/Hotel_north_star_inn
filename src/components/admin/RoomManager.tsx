@@ -193,7 +193,7 @@ export function RoomManager({ initialRooms }: { initialRooms: Room[] }) {
                 <Input id="description" name="description" defaultValue={editingRoom?.description ?? ""} />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="price">Price (Rs.)</Label>
                   <Input id="price" name="price" type="number" defaultValue={editingRoom?.price ?? ""} required />

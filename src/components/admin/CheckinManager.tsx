@@ -112,7 +112,7 @@ export function CheckinManager({
             <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
               <DialogHeader><DialogTitle>New Walk-in Guest (Offline)</DialogTitle></DialogHeader>
               <form action={createAction} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-1">
                     <Label>Guest Name</Label>
                     <Input name="user_name" required />
@@ -130,7 +130,7 @@ export function CheckinManager({
                   <Label>Address</Label>
                   <Input name="address" />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-1">
                     <Label>ID Proof</Label>
                     <select name="id_proof_type" className="flex h-9 w-full rounded-md border border-zinc-300 bg-background px-3 py-1 text-sm dark:border-zinc-700">
@@ -143,7 +143,7 @@ export function CheckinManager({
                     <Input name="id_proof_number" />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div className="space-y-1">
                     <Label>Check-in</Label>
                     <Input name="check_in" type="date" defaultValue={todayStr} min={todayStr} required onChange={(e) => setNewCheckIn(e.target.value)} />
