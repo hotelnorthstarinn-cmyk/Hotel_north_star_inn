@@ -903,15 +903,16 @@ export async function addRoom(prevState: unknown, formData: FormData) {
   const status = (formData.get("status") as string) || "available"
   const featuresRaw = formData.getAll("features") as string[]
   const features = featuresRaw.filter(Boolean)
-  const imageFiles = formData.getAll("images") as File[]
-
+  const imageEntries = formData.getAll("images")
   if (!room_code) return { error: "Room code is required" }
 
   const uploadedUrls: string[] = []
-  for (const file of imageFiles) {
-    if (file.size > 0) {
-      const url = await uploadImage(supabase, file, "rooms")
+  for (const entry of imageEntries) {
+    if (entry instanceof File && entry.size > 0) {
+      const url = await uploadImage(supabase, entry, "rooms")
       if (url) uploadedUrls.push(url)
+    } else if (typeof entry === "string" && entry.length > 0) {
+      uploadedUrls.push(entry)
     }
   }
 
@@ -941,7 +942,7 @@ export async function updateRoom(prevState: unknown, formData: FormData) {
   const status = formData.get("status") as string | null
   const existingGalleryRaw = formData.get("existing_gallery") as string | null
   const featuresRaw = formData.getAll("features") as string[]
-  const imageFiles = formData.getAll("images") as File[]
+  const imageEntries = formData.getAll("images")
 
   if (name) updates.name = name
   if (description) updates.description = description
@@ -954,10 +955,12 @@ export async function updateRoom(prevState: unknown, formData: FormData) {
   if (features.length > 0) updates.features = features
 
   const uploadedUrls: string[] = []
-  for (const file of imageFiles) {
-    if (file.size > 0) {
-      const url = await uploadImage(supabase, file, "rooms")
+  for (const entry of imageEntries) {
+    if (entry instanceof File && entry.size > 0) {
+      const url = await uploadImage(supabase, entry, "rooms")
       if (url) uploadedUrls.push(url)
+    } else if (typeof entry === "string" && entry.length > 0) {
+      uploadedUrls.push(entry)
     }
   }
 

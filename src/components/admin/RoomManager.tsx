@@ -12,16 +12,24 @@ import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { addRoom, updateRoom, deleteRoom } from "@/lib/actions"
-import { Pencil, Trash2, Plus, ImageIcon, X } from "lucide-react"
+import { createClient } from "@/lib/supabase"
+import { Pencil, Trash2, Plus, ImageIcon, X, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import type { Room } from "@/types"
 import { ROOM_FEATURES, ROOM_STATUSES } from "@/types"
 
-function SubmitButton({ label = "Save" }: { label?: string }) {
+function SubmitButton({ label = "Save", uploading = false }: { label?: string; uploading?: boolean }) {
   const { pending } = useFormStatus()
+  const disabled = pending || uploading
   return (
-    <Button type="submit" disabled={pending}>
-      {pending ? "Saving..." : label}
+    <Button type="submit" disabled={disabled}>
+      {uploading ? (
+        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading images...</>
+      ) : pending ? (
+        "Saving..."
+      ) : (
+        label
+      )}
     </Button>
   )
 }
@@ -45,9 +53,49 @@ export function RoomManager({ initialRooms }: { initialRooms: Room[] }) {
   const [editingRoom, setEditingRoom] = useState<Room | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const [uploading, setUploading] = useState(false)
 
   const [addState, addAction] = useActionState(addRoom, null)
   const [updateState, updateAction] = useActionState(updateRoom, null)
+
+  async function uploadFile(file: File, folder: string) {
+    const supabase = createClient()
+    const ext = file.name.split(".").pop()
+    const fileName = `${folder}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${ext}`
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from("hotel_images")
+      .upload(`${folder}/${fileName}`, file)
+    if (uploadError) { console.error("Upload error:", uploadError); return null }
+    if (!uploadData) return null
+    const { data: urlData } = supabase.storage.from("hotel_images").getPublicUrl(uploadData.path)
+    return urlData?.publicUrl ?? null
+  }
+
+  async function handleFormSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const form = e.currentTarget
+    const formData = new FormData(form)
+
+    const imageFiles = Array.from(formData.getAll("images"))
+      .filter((v): v is File => v instanceof File && v.size > 0)
+
+    if (imageFiles.length > 0) {
+      setUploading(true)
+      const uploadedUrls: string[] = []
+      for (const file of imageFiles) {
+        const url = await uploadFile(file, "rooms")
+        if (url) uploadedUrls.push(url)
+      }
+      setUploading(false)
+      formData.delete("images")
+      for (const url of uploadedUrls) {
+        formData.append("images", url)
+      }
+    }
+
+    if (editingRoom) updateAction(formData)
+    else addAction(formData)
+  }
 
   useEffect(() => {
     if (addState?.success) {
@@ -132,7 +180,7 @@ export function RoomManager({ initialRooms }: { initialRooms: Room[] }) {
             <DialogHeader>
               <DialogTitle>{editingRoom ? "Edit Room" : "Add New Room"}</DialogTitle>
             </DialogHeader>
-            <form ref={formRef} action={editingRoom ? updateAction : addAction} className="space-y-5">
+            <form ref={formRef} onSubmit={handleFormSubmit} className="space-y-5">
               {editingRoom && <input type="hidden" name="id" value={editingRoom.id} />}
 
               <div className="space-y-2">
@@ -233,7 +281,7 @@ export function RoomManager({ initialRooms }: { initialRooms: Room[] }) {
                 )}
               </div>
 
-              <SubmitButton label={editingRoom ? "Update Room" : "Add Room"} />
+              <SubmitButton label={editingRoom ? "Update Room" : "Add Room"} uploading={uploading} />
             </form>
           </DialogContent>
         </Dialog>
